@@ -90,8 +90,7 @@ public class ListingController {
                 .map(listing -> EntityModel.of(
                         listing,
                         linkTo(methodOn(ListingController.class).api()).withSelfRel(),
-                        linkTo(methodOn(ListingController.class)
-                                .detail(listing.getId(), null)).withRel("html")))
+                        linkTo(ListingController.class).slash("annonces").slash(listing.getId()).withRel("html")))
                 .toList();
         var representation = CollectionModel.of(
                 resources,

@@ -9,11 +9,11 @@ import org.springframework.data.repository.query.Param;
 public interface ListingRepository extends JpaRepository<Listing,Long> {
     @Query("""
             select distinct l from Listing l left join l.keywords k
-            where (:q is null or lower(l.title) like lower(concat('%', :q, '%'))
-                or lower(l.description) like lower(concat('%', :q, '%')))
-                and (:area is null or lower(l.area) like lower(concat('%', :area, '%')))
+            where (cast(:q as string) is null or lower(l.title) like lower(concat('%', cast(:q as string), '%'))
+                or lower(l.description) like lower(concat('%', cast(:q as string), '%')))
+                and (cast(:area as string) is null or lower(l.area) like lower(concat('%', cast(:area as string), '%')))
                 and (:state is null or l.state = :state)
-                and (:keyword is null or lower(k) like lower(concat('%', :keyword, '%')))
+                and (cast(:keyword as string) is null or lower(k) like lower(concat('%', cast(:keyword as string), '%')))
             order by l.publishedAt desc
             """)
     List<Listing> search(
