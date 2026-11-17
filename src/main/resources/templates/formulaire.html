@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Déposer un objet · Donner</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header>
+        <a class="brand" href="/annonces">donner<span>.</span></a>
+        <nav>
+            <a href="/annonces">Annuler</a>
+        </nav>
+    </header>
+
+    <main class="detail">
+        <p class="eyebrow">FAIRE CIRCULER</p>
+        <h1>Proposer un objet</h1>
+        <p class="intro">Un objet utile mérite une nouvelle histoire.</p>
+
+        <form class="editor" action="/annonces" method="post" th:object="${annonce}">
+            <label>
+                Titre
+                <input required maxlength="180" th:field="*{title}">
+            </label>
+            <label>
+                Description
+                <textarea rows="5" th:field="*{description}"></textarea>
+            </label>
+            <label>
+                État
+                <select th:field="*{state}">
+                    <option th:each="e : ${etats}" th:value="${e}" th:text="${e}"></option>
+                </select>
+            </label>
+            <label>
+                Ville / zone
+                <input required th:field="*{area}">
+            </label>
+            <label>
+                Mode de remise
+                <select th:field="*{deliveryMode}">
+                    <option th:each="m : ${modes}" th:value="${m}" th:text="${m}"></option>
+                </select>
+            </label>
+            <label>
+                Mots-clés (séparés par des virgules)
+                <input th:field="*{keywords}" placeholder="livre, culture">
+            </label>
+            <label>
+                Votre profil
+                <select th:field="*{ownerId}">
+                    <option value="1">Camille</option>
+                    <option value="2">Yanis</option>
+                </select>
+            </label>
+            <button class="button">Publier l’annonce</button>
+        </form>
+    </main>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${annonce.title} + ' · Donner'">Annonce · Donner</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header>
+        <a class="brand" href="/annonces">donner<span>.</span></a>
+        <nav>
+            <a href="/annonces">← Toutes les annonces</a>
+        </nav>
+    </header>
+
+    <main class="detail">
+        <p class="eyebrow" th:text="${annonce.area}">Ville</p>
+        <h1 th:text="${annonce.title}">Objet</h1>
+        <p class="intro" th:text="${annonce.description}">Description</p>
+
+        <div class="detail-box">
+            <p>
+                <b>État</b>
+                <span th:text="${annonce.state}">BON</span>
+            </p>
+            <p>
+                <b>Remise</b>
+                <span th:text="${annonce.deliveryMode}">MAIN_PROPRE</span>
+            </p>
+            <p>
+                <b>Proposé par</b>
+                <span th:text="${annonce.owner.name}">Donateur</span>
+            </p>
+        </div>
+
+        <h2>Mots-clés</h2>
+        <div class="tags">
+            <span th:each="tag : ${annonce.keywords}" th:text="${tag}">mot</span>
+        </div>
+        <a class="button" href="/annonces">Retour aux annonces</a>
+    </main>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Annonces · Donner</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header>
+        <a class="brand" href="/annonces">donner<span>.</span></a>
+        <nav>
+            <a href="/annonces">Explorer</a>
+            <a class="button small" href="/annonces/nouvelle">Déposer une annonce</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <p class="eyebrow">LA SECONDE VIE DES OBJETS</p>
+            <h1>Les bonnes choses<br>circulent.</h1>
+            <p class="intro">
+                Trouvez près de chez vous les objets qui cherchent une nouvelle maison.
+            </p>
+
+            <form class="search" action="/annonces">
+                <label>
+                    Recherche
+                    <input name="q" placeholder="Une lampe, un livre…" th:value="${q}">
+                </label>
+                <label>
+                    Ville
+                    <input name="zone" placeholder="Lyon" th:value="${zone}">
+                </label>
+                <label>
+                    Mot-clé
+                    <input name="motCle" placeholder="maison" th:value="${motCle}">
+                </label>
+                <button class="button">Rechercher</button>
+            </form>
+        </section>
+
+        <section class="listing-head">
+            <div>
+                <p class="eyebrow">À DÉCOUVRIR</p>
+                <h2>Annonces récentes</h2>
+            </div>
+            <span th:text="${annonces.size()} + ' objets'">0 objets</span>
+        </section>
+
+        <div class="cards">
+            <article class="card" th:each="a : ${annonces}">
+                <div class="card-art">
+                    <span th:text="${a.state}">BON</span>
+                    <span class="spark" aria-hidden="true">✳</span>
+                </div>
+                <div class="card-body">
+                    <p class="meta" th:text="${a.area} + ' · ' + ${a.deliveryMode}">
+                        Lyon · main propre
+                    </p>
+                    <h3>
+                        <a th:href="@{/annonces/{id}(id=${a.id})}" th:text="${a.title}">Titre</a>
+                    </h3>
+                    <p th:text="${a.description}">Description</p>
+                    <div class="tags">
+                        <span th:each="tag : ${a.keywords}" th:text="${tag}">mot</span>
+                    </div>
+                    <p class="owner" th:text="'Donné par ' + ${a.owner.name}">Donateur</p>
+                </div>
+            </article>
+        </div>
+
+        <p class="empty" th:if="${annonces.isEmpty()}">
+            Aucun objet ne correspond à ces critères. Essayez une autre recherche.
+        </p>
+    </main>
+
+    <footer>
+        Donner une seconde vie, ensemble.
+        <a href="/api/annonces">API JSON</a>
+    </footer>
+</body>
+</html>
