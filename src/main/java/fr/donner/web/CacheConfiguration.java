@@ -11,7 +11,7 @@ public class CacheConfiguration {
     FilterRegistrationBean<ShallowEtagHeaderFilter> etagFilter() {
         FilterRegistrationBean<ShallowEtagHeaderFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(new ShallowEtagHeaderFilter());
-        registration.addUrlPatterns("/api/*");
+        registration.addUrlPatterns("/api/*", "/annonces", "/annonces/*", "/personnes/*");
         return registration;
     }
 }

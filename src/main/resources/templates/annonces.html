@@ -7,13 +7,7 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <header>
-        <a class="brand" href="/annonces">donner<span>.</span></a>
-        <nav>
-            <a href="/annonces">Explorer</a>
-            <a class="button small" href="/annonces/nouvelle">Déposer une annonce</a>
-        </nav>
-    </header>
+    <header th:replace="~{fragments :: header}"></header>
 
     <main>
         <section class="hero">
@@ -23,7 +17,7 @@
                 Trouvez près de chez vous les objets qui cherchent une nouvelle maison.
             </p>
 
-            <form class="search" action="/annonces">
+            <form class="search" action="/annonces" method="get">
                 <label>
                     Recherche
                     <input name="q" placeholder="Une lampe, un livre…" th:value="${q}">
@@ -44,16 +38,28 @@
                                 th:selected="${etat == e}"></option>
                     </select>
                 </label>
-                <button class="button">Rechercher</button>
+                <label>
+                    Tri
+                    <select name="sort">
+                        <option value="publishedAt,desc" th:selected="${sort == 'publishedAt,desc'}">Plus récentes</option>
+                        <option value="publishedAt,asc" th:selected="${sort == 'publishedAt,asc'}">Plus anciennes</option>
+                        <option value="title,asc" th:selected="${sort == 'title,asc'}">Titre A→Z</option>
+                        <option value="area,asc" th:selected="${sort == 'area,asc'}">Ville A→Z</option>
+                    </select>
+                </label>
+                <button class="button" type="submit">Rechercher</button>
             </form>
-            <form class="save-search" action="/recherches" method="post">
-                <input type="hidden" name="personId" value="1">
+
+            <form class="save-search" th:if="${utilisateurConnecte != null}" th:action="@{/recherches}" method="post">
                 <input type="hidden" name="q" th:value="${q}">
                 <input type="hidden" name="zone" th:value="${zone}">
                 <input type="hidden" name="etat" th:value="${etat}">
                 <input type="hidden" name="motCle" th:value="${motCle}">
-                <button class="text-button">Sauvegarder cette recherche (profil démo)</button>
+                <button class="text-button" type="submit">Sauvegarder cette recherche</button>
             </form>
+            <p class="save-search" th:if="${utilisateurConnecte == null}">
+                <a class="text-button" href="/login">Connectez-vous pour sauvegarder cette recherche</a>
+            </p>
         </section>
 
         <section class="listing-head">
@@ -61,7 +67,7 @@
                 <p class="eyebrow">À DÉCOUVRIR</p>
                 <h2>Annonces récentes</h2>
             </div>
-            <span th:text="${annonces.size()} + ' objets'">0 objets</span>
+            <span th:text="${pageAnnonces.totalElements} + ' objets'">0 objets</span>
         </section>
 
         <div class="cards">
@@ -89,11 +95,24 @@
         <p class="empty" th:if="${annonces.isEmpty()}">
             Aucun objet ne correspond à ces critères. Essayez une autre recherche.
         </p>
+
+        <nav class="pagination" th:if="${pageAnnonces.totalPages > 1}" aria-label="Pagination">
+            <a class="button small secondary" th:if="${pageAnnonces.hasPrevious()}"
+               th:href="@{/annonces(q=${q},zone=${zone},etat=${etat},motCle=${motCle},sort=${sort},size=${size},page=${page - 1})}">
+                ← Précédent
+            </a>
+            <span class="page-info"
+                  th:text="'Page ' + ${page + 1} + ' / ' + ${pageAnnonces.totalPages}">Page 1 / 1</span>
+            <a class="button small secondary" th:if="${pageAnnonces.hasNext()}"
+               th:href="@{/annonces(q=${q},zone=${zone},etat=${etat},motCle=${motCle},sort=${sort},size=${size},page=${page + 1})}">
+                Suivant →
+            </a>
+        </nav>
     </main>
 
     <footer>
         Donner une seconde vie, ensemble.
-        <a href="/api/annonces">API JSON</a>
+        <a href="/api/annonces">API JSON / HAL</a>
     </footer>
 </body>
 </html>

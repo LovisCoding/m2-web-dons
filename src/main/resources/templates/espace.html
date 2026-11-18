@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mon espace · Donner</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header th:replace="~{fragments :: header}"></header>
+
+    <main class="space">
+        <p class="eyebrow">ESPACE PERSONNEL</p>
+        <h1 th:text="'Bonjour, ' + ${utilisateurConnecte.name}">Mon espace</h1>
+        <p class="intro">Gérez vos annonces, vos lots d’objets, vos favoris, vos recherches sauvegardées et votre messagerie.</p>
+
+        <div class="space-grid">
+            <section class="space-card">
+                <div class="space-head">
+                    <h2>Mes annonces</h2>
+                    <a class="button small" href="/annonces/nouvelle">Nouvelle annonce</a>
+                </div>
+                <p class="meta" th:if="${mesAnnonces.isEmpty()}">Vous n’avez pas encore déposé d’annonce.</p>
+                <ul class="space-list" th:if="${!mesAnnonces.isEmpty()}">
+                    <li th:each="a : ${mesAnnonces}">
+                        <a th:href="@{/annonces/{id}(id=${a.id})}" th:text="${a.title}">Titre</a>
+                        <span class="meta" th:text="${a.area} + ' · ' + ${a.state}">Lyon · BON</span>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="space-card">
+                <h2>Mes favoris</h2>
+                <p class="meta" th:if="${mesFavoris.isEmpty()}">Aucun favori pour le moment.</p>
+                <ul class="space-list" th:if="${!mesFavoris.isEmpty()}">
+                    <li th:each="fav : ${mesFavoris}">
+                        <div>
+                            <a th:href="@{/annonces/{id}(id=${fav.id})}" th:text="${fav.title}">Titre</a>
+                            <span class="meta" th:text="${fav.area} + ' · ' + ${fav.owner.name}">Lyon</span>
+                        </div>
+                        <form th:action="@{/annonces/{id}/favoris/supprimer(id=${fav.id})}" method="post">
+                            <input type="hidden" name="redirect" value="espace">
+                            <button class="text-button" type="submit">Retirer</button>
+                        </form>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="space-card">
+                <h2>Mes lots d’objets</h2>
+                <form class="compact-form" th:action="@{/lots}" method="post">
+                    <label>
+                        Nom du nouveau lot
+                        <input name="name" required placeholder="Pack salon">
+                    </label>
+                    <button class="button small" type="submit">Créer un lot</button>
+                </form>
+                <p class="meta" th:if="${mesLots.isEmpty()}">Aucun lot créé.</p>
+                <div class="lot-box" th:each="lot : ${mesLots}">
+                    <div class="space-head">
+                        <strong th:text="${lot.name}">Lot</strong>
+                        <form th:action="@{/lots/{id}/supprimer(id=${lot.id})}" method="post">
+                            <button class="text-button danger-text" type="submit">Supprimer le lot</button>
+                        </form>
+                    </div>
+                    <ul class="space-list" th:if="${!lot.listings.isEmpty()}">
+                        <li th:each="item : ${lot.listings}">
+                            <a th:href="@{/annonces/{id}(id=${item.id})}" th:text="${item.title}">Objet</a>
+                            <form th:action="@{/lots/{id}/annonces/{aid}/supprimer(id=${lot.id},aid=${item.id})}" method="post">
+                                <button class="text-button" type="submit">Retirer</button>
+                            </form>
+                        </li>
+                    </ul>
+                    <form class="compact-form" th:if="${!mesAnnonces.isEmpty()}"
+                          th:action="@{/lots/{id}/annonces(id=${lot.id})}" method="post">
+                        <select name="listingId" required>
+                            <option th:each="a : ${mesAnnonces}" th:value="${a.id}" th:text="${a.title}"></option>
+                        </select>
+                        <button class="button small secondary" type="submit">Ajouter au lot</button>
+                    </form>
+                </div>
+            </section>
+
+            <section class="space-card">
+                <h2>Recherches sauvegardées</h2>
+                <p class="meta" th:if="${mesRecherches.isEmpty()}">Aucune recherche enregistrée.</p>
+                <ul class="space-list" th:if="${!mesRecherches.isEmpty()}">
+                    <li th:each="s : ${mesRecherches}">
+                        <div>
+                            <a th:href="@{/annonces(q=${s.query},zone=${s.area},etat=${s.state},motCle=${s.keyword})}"
+                               th:text="${(s.query != null ? s.query : 'Toutes') + (s.area != null ? ' · ' + s.area : '') + (s.state != null ? ' · ' + s.state : '') + (s.keyword != null ? ' · #' + s.keyword : '')}">
+                                Critères
+                            </a>
+                            <span class="meta" th:text="${s.notifications ? 'Notifications actives' : 'Notifications désactivées'}">
+                                Notifications actives
+                            </span>
+                        </div>
+                        <div class="inline-actions">
+                            <form th:action="@{/recherches/{id}/notifications(id=${s.id})}" method="post">
+                                <input type="hidden" name="enabled" th:value="${!s.notifications}">
+                                <button class="text-button" type="submit"
+                                        th:text="${s.notifications ? 'Désactiver' : 'Activer'}">Basculer</button>
+                            </form>
+                            <form th:action="@{/recherches/{id}/supprimer(id=${s.id})}" method="post">
+                                <button class="text-button danger-text" type="submit">Supprimer</button>
+                            </form>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+        </div>
+
+        <section class="space-card message-section">
+            <h2>Messagerie interne</h2>
+            <form class="editor" th:if="${!destinataires.isEmpty()}" th:action="@{/messages}" method="post">
+                <label>
+                    Destinataire
+                    <select name="recipientId" required>
+                        <option th:each="d : ${destinataires}" th:value="${d.id}" th:text="${d.name}"></option>
+                    </select>
+                </label>
+                <label>
+                    Message
+                    <textarea name="body" rows="2" required maxlength="4000" placeholder="Écrire un message…"></textarea>
+                </label>
+                <button class="button small" type="submit">Envoyer</button>
+            </form>
+            <p class="meta" th:if="${mesMessages.isEmpty()}">Aucun message pour le moment.</p>
+            <ul class="space-list" th:if="${!mesMessages.isEmpty()}">
+                <li th:each="m : ${mesMessages}">
+                    <div>
+                        <strong th:text="${m.sender.name} + ' → ' + ${m.recipient.name}">A → B</strong>
+                        <span class="meta" th:if="${m.listing != null}">
+                            · <a th:href="@{/annonces/{id}(id=${m.listing.id})}" th:text="${m.listing.title}">Annonce</a>
+                        </span>
+                        <p class="message-body" th:text="${m.body}">Contenu</p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+    </main>
+</body>
+</html>

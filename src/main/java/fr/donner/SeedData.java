@@ -9,15 +9,17 @@ import java.util.Set;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 class SeedData {
     @Bean
-    CommandLineRunner seed(PersonRepository people, ListingRepository listings) {
+    CommandLineRunner seed(PersonRepository people, ListingRepository listings, PasswordEncoder passwordEncoder) {
         return args -> {
             if (people.count() == 0) {
-                Person camille = people.save(new Person("Camille", "camille@example.fr"));
-                Person yanis = people.save(new Person("Yanis", "yanis@example.fr"));
+                String defaultHash = passwordEncoder.encode("password");
+                Person camille = people.save(new Person("Camille", "camille@example.fr", defaultHash));
+                Person yanis = people.save(new Person("Yanis", "yanis@example.fr", defaultHash));
 
                 listings.save(new Listing(
                         "Lampe de bureau vintage",
@@ -35,6 +37,13 @@ class SeedData {
                         DeliveryMode.LES_DEUX,
                         yanis,
                         Set.of("livre", "culture")));
+            } else {
+                people.findAll().forEach(person -> {
+                    if (person.getPasswordHash() == null || person.getPasswordHash().isBlank()) {
+                        person.setPasswordHash(passwordEncoder.encode("password"));
+                        people.save(person);
+                    }
+                });
             }
         };
     }

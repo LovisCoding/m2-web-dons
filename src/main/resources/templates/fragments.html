@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<body>
+<header th:fragment="header">
+    <a class="brand" href="/annonces">donner<span>.</span></a>
+    <nav>
+        <a href="/annonces">Explorer</a>
+        <th:block th:if="${utilisateurConnecte != null}">
+            <a href="/mon-espace" th:text="'Mon espace (' + ${utilisateurConnecte.name} + ')'">Mon espace</a>
+            <a class="button small" href="/annonces/nouvelle">Déposer une annonce</a>
+            <form class="inline-form" th:action="@{/logout}" method="post">
+                <button class="text-button" type="submit">Déconnexion</button>
+            </form>
+        </th:block>
+        <th:block th:if="${utilisateurConnecte == null}">
+            <a href="/login">Connexion</a>
+            <a href="/inscription">Inscription</a>
+            <a class="button small" href="/annonces/nouvelle">Déposer une annonce</a>
+        </th:block>
+    </nav>
+</header>
+</body>
+</html>

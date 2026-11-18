@@ -7,12 +7,7 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <header>
-        <a class="brand" href="/annonces">donner<span>.</span></a>
-        <nav>
-            <a href="/annonces">← Toutes les annonces</a>
-        </nav>
-    </header>
+    <header th:replace="~{fragments :: header}"></header>
 
     <main class="detail">
         <p class="eyebrow" th:text="${annonce.area}">Ville</p>
@@ -20,6 +15,10 @@
         <p class="intro" th:text="${annonce.description}">Description</p>
         <p class="meta">Publiée le <time th:datetime="${annonce.publishedAt}"
                 th:text="${datePublication}">18/11/2026</time></p>
+
+        <div class="alert success" th:if="${param.messageEnvoye}">
+            Votre message a bien été envoyé au donateur.
+        </div>
 
         <div class="detail-box">
             <p>
@@ -40,25 +39,17 @@
         <div class="tags">
             <span th:each="tag : ${annonce.keywords}" th:text="${tag}">mot</span>
         </div>
-        <section class="actions">
-            <form th:action="@{/annonces/{id}/favoris(id=${annonce.id})}" method="post">
-                <label>
-                    Profil démo
-                    <select name="personId">
-                        <option th:each="personne : ${personnes}" th:value="${personne.id}"
-                                th:text="${personne.name}"></option>
-                    </select>
-                </label>
+
+        <section class="actions" th:if="${utilisateurConnecte != null}">
+            <form th:if="${!estFavori}" th:action="@{/annonces/{id}/favoris(id=${annonce.id})}" method="post">
                 <button class="button" type="submit">Ajouter aux favoris</button>
             </form>
+            <form th:if="${estFavori}" th:action="@{/annonces/{id}/favoris/supprimer(id=${annonce.id})}" method="post">
+                <button class="button secondary" type="submit">Retirer des favoris</button>
+            </form>
+
             <form th:action="@{/annonces/{id}/messages(id=${annonce.id})}" method="post">
-                <label>
-                    Votre profil
-                    <select name="senderId">
-                        <option th:each="personne : ${personnes}" th:value="${personne.id}"
-                                th:text="${personne.name}"></option>
-                    </select>
-                </label>
+                <p class="meta">Message envoyé en tant que <strong th:text="${utilisateurConnecte.name}">Profil</strong></p>
                 <label>
                     Votre message au donateur
                     <textarea name="body" rows="3" required maxlength="4000"></textarea>
@@ -66,10 +57,16 @@
                 <button class="button" type="submit">Envoyer le message</button>
             </form>
         </section>
-        <details class="owner-tools">
+
+        <section class="actions" th:if="${utilisateurConnecte == null}">
+            <p class="meta">
+                <a class="text-button" href="/login">Connectez-vous</a> pour ajouter cette annonce aux favoris ou contacter le donateur.
+            </p>
+        </section>
+
+        <details class="owner-tools" th:if="${estProprietaire}">
             <summary>Modifier ou supprimer (propriétaire)</summary>
             <form th:action="@{/annonces/{id}/modifier(id=${annonce.id})}" method="post">
-                <input type="hidden" name="ownerId" th:value="${annonce.owner.id}">
                 <label>Titre<input name="title" required maxlength="180" th:value="${annonce.title}"></label>
                 <label>Description<textarea name="description" rows="4" th:text="${annonce.description}"></textarea></label>
                 <label>État<select name="state" required>
@@ -81,14 +78,14 @@
                     <option th:each="m : ${T(fr.donner.domain.DeliveryMode).values()}" th:value="${m}"
                             th:text="${m}" th:selected="${annonce.deliveryMode == m}"></option>
                 </select></label>
-                <label>Mots-clés<input name="keywords" th:value="${annonce.keywords}"></label>
+                <label>Mots-clés<input name="keywords" th:value="${#strings.listJoin(annonce.keywords, ', ')}"></label>
                 <button class="button" type="submit">Enregistrer</button>
             </form>
             <form th:action="@{/annonces/{id}/supprimer(id=${annonce.id})}" method="post">
-                <input type="hidden" name="ownerId" th:value="${annonce.owner.id}">
                 <button class="danger-button" type="submit">Supprimer l’annonce</button>
             </form>
         </details>
+
         <a class="button" href="/annonces">Retour aux annonces</a>
     </main>
 </body>

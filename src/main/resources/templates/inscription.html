@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Inscription · Donner</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header th:replace="~{fragments :: header}"></header>
+
+    <main class="detail">
+        <p class="eyebrow">REJOINDRE LA PLATEFORME</p>
+        <h1>Créer un compte</h1>
+        <p class="intro">Inscrivez-vous pour proposer des objets et recevoir des notifications sur vos recherches.</p>
+
+        <div class="alert error" th:if="${erreur}" th:text="${erreur}">Erreur</div>
+
+        <form class="editor" th:action="@{/inscription}" method="post" th:object="${inscription}">
+            <label>
+                Nom affiché
+                <input required th:field="*{name}" placeholder="Alex">
+            </label>
+            <label>
+                Adresse e-mail
+                <input type="email" required th:field="*{email}" placeholder="alex@example.fr">
+            </label>
+            <label>
+                Mot de passe
+                <input type="password" required th:field="*{password}" placeholder="Choisissez un mot de passe">
+            </label>
+            <button class="button" type="submit">Créer mon compte</button>
+        </form>
+
+        <p class="meta">Déjà inscrit ? <a class="text-button" href="/login">Se connecter</a></p>
+    </main>
+</body>
+</html>
