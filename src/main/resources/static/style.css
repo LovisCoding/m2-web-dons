@@ -207,8 +207,17 @@ summary:focus-visible {
 nav.main-nav {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 8px 14px;
+    gap: 14px;
+}
+
+.nav-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nav-user {
+    margin-left: 20px;
 }
 
 .nav-link {
@@ -1200,6 +1209,13 @@ input[type="file"]::file-selector-button:hover {
     margin-bottom: 24px;
 }
 
+.space-header-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
 .space-header h1 {
     margin-bottom: 8px;
 }
@@ -1512,7 +1528,72 @@ input[type="file"]::file-selector-button:hover {
     }
 
     .header-inner {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto auto;
+        row-gap: 10px;
+        column-gap: 12px;
+        align-items: center;
         padding: 10px 18px;
+        min-height: auto;
+    }
+
+    nav.main-nav {
+        display: contents;
+    }
+
+    .brand {
+        grid-column: 1;
+        grid-row: 1;
+        min-height: auto;
+    }
+
+    .nav-user {
+        grid-column: 2;
+        grid-row: 1;
+        margin-left: 0;
+        justify-self: end;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .nav-primary {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        width: 100%;
+        padding-top: 6px;
+        border-top: 1px solid var(--border);
+    }
+
+    .nav-primary .nav-link {
+        min-height: 38px;
+        padding: 0 8px;
+        font-size: 13px;
+    }
+
+    .nav-primary .button.small {
+        min-height: 38px;
+        padding: 0 14px;
+        font-size: 13px;
+    }
+
+    .user-pill {
+        margin-left: 0;
+        min-height: 38px;
+        padding: 3px 12px 3px 6px;
+        font-size: 12px;
+        max-width: 210px;
+    }
+
+    .user-pill span:last-child {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .search {
@@ -1539,6 +1620,45 @@ input[type="file"]::file-selector-button:hover {
 }
 
 @media (max-width: 520px) {
+    .header-inner {
+        padding: 8px 14px;
+        row-gap: 8px;
+    }
+
+    .brand {
+        font-size: 22px;
+        gap: 8px;
+    }
+
+    .brand-mark {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+    }
+
+    .user-pill {
+        max-width: 175px;
+        font-size: 11px;
+        padding: 2px 10px 2px 4px;
+        gap: 6px;
+    }
+
+    .avatar-sm {
+        width: 24px;
+        height: 24px;
+        font-size: 11px;
+    }
+
+    .nav-primary .nav-link {
+        padding: 0 4px;
+        font-size: 12px;
+    }
+
+    .nav-primary .button.small {
+        padding: 0 12px;
+        font-size: 12px;
+    }
+
     .cards,
     .search,
     .stats-grid {

@@ -13,18 +13,13 @@
             <span>donner<span class="dot">.</span></span>
         </a>
         <nav class="main-nav" aria-label="Navigation principale">
-            <a class="nav-link" href="/annonces">
-                <svg class="icon-sm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"/>
-                    <path d="m21 21-4.3-4.3"/>
-                </svg>
-                <span>Explorer</span>
-            </a>
-            <th:block th:if="${utilisateurConnecte != null}">
-                <a class="user-pill" href="/mon-espace">
-                    <span class="avatar-sm" aria-hidden="true"
-                          th:text="${!#strings.isEmpty(utilisateurConnecte.name) ? #strings.toUpperCase(#strings.substring(utilisateurConnecte.name, 0, 1)) : 'U'}">U</span>
-                    <span th:text="'Mon espace (' + ${utilisateurConnecte.name} + ')'">Mon espace</span>
+            <div class="nav-group nav-primary">
+                <a class="nav-link" href="/annonces">
+                    <svg class="icon-sm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.3-4.3"/>
+                    </svg>
+                    <span>Explorer</span>
                 </a>
                 <a class="button small" href="/annonces/nouvelle">
                     <svg class="icon-sm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -33,21 +28,20 @@
                     </svg>
                     <span>Déposer une annonce</span>
                 </a>
-                <form class="inline-form" th:action="@{/logout}" method="post">
-                    <button class="text-button" type="submit">Déconnexion</button>
-                </form>
-            </th:block>
-            <th:block th:if="${utilisateurConnecte == null}">
-                <a class="nav-link" href="/login">Connexion</a>
-                <a class="nav-link" href="/inscription">Inscription</a>
-                <a class="button small" href="/annonces/nouvelle">
-                    <svg class="icon-sm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M5 12h14"/>
-                        <path d="M12 5v14"/>
-                    </svg>
-                    <span>Déposer une annonce</span>
-                </a>
-            </th:block>
+            </div>
+            <div class="nav-group nav-user">
+                <th:block th:if="${utilisateurConnecte != null}">
+                    <a class="user-pill" href="/mon-espace">
+                        <span class="avatar-sm" aria-hidden="true"
+                              th:text="${!#strings.isEmpty(utilisateurConnecte.name) ? #strings.toUpperCase(#strings.substring(utilisateurConnecte.name, 0, 1)) : 'U'}">U</span>
+                        <span th:text="'Mon espace (' + ${utilisateurConnecte.name} + ')'">Mon espace</span>
+                    </a>
+                </th:block>
+                <th:block th:if="${utilisateurConnecte == null}">
+                    <a class="nav-link" href="/login">Connexion</a>
+                    <a class="nav-link" href="/inscription">Inscription</a>
+                </th:block>
+            </div>
         </nav>
     </div>
 </header>

@@ -528,7 +528,18 @@ class WebIntegrationTests {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andReturn();
         String spaceHtml = spaceResult.getResponse().getContentAsString();
+        assertTrue(spaceHtml.contains("Déconnexion"));
+        assertTrue(spaceHtml.contains("action=\"/logout\""));
         assertTrue(spaceHtml.contains("Est-elle toujours disponible ?"));
+
+        MvcResult annoncesConnected = mvc.perform(get("/annonces").with(user("camille@example.fr")))
+                .andExpect(status().isOk())
+                .andReturn();
+        String annoncesConnectedHtml = annoncesConnected.getResponse().getContentAsString();
+        String headerHtml = annoncesConnectedHtml.substring(
+                annoncesConnectedHtml.indexOf("<header"),
+                annoncesConnectedHtml.indexOf("</header>"));
+        assertFalse(headerHtml.contains("Déconnexion"));
         assertFalse(spaceHtml.isBlank());
         assertTrue(spaceHtml.contains("pageAnnonces=1"));
         String annoncesCard = spaceHtml.substring(
