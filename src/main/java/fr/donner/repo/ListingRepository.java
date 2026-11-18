@@ -34,4 +34,6 @@ public interface ListingRepository extends JpaRepository<Listing, Long> {
     }
 
     List<Listing> findByOwnerIdOrderByPublishedAtDesc(Long ownerId);
+
+    Page<Listing> findByOwnerIdOrderByPublishedAtDesc(Long ownerId, Pageable pageable);
 }

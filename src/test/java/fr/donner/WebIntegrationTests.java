@@ -522,7 +522,7 @@ class WebIntegrationTests {
                         .with(httpBasic("yanis@example.fr", "password")))
                 .andExpect(status().isForbidden());
 
-        // Espace personnel HTML connecté
+        // Espace personnel HTML connecté + pagination de Mes annonces et Mes favoris
         MvcResult spaceResult = mvc.perform(get("/mon-espace").with(user("camille@example.fr")))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
@@ -530,5 +530,50 @@ class WebIntegrationTests {
         String spaceHtml = spaceResult.getResponse().getContentAsString();
         assertTrue(spaceHtml.contains("Est-elle toujours disponible ?"));
         assertFalse(spaceHtml.isBlank());
+        assertTrue(spaceHtml.contains("pageAnnonces=1"));
+        String annoncesCard = spaceHtml.substring(
+                spaceHtml.indexOf("id=\"mes-annonces\""),
+                spaceHtml.indexOf("id=\"mes-favoris\""));
+        assertTrue(annoncesCard.contains("<span class=\"count-badge\">14</span>"));
+        assertEquals(5, annoncesCard.split("<li>", -1).length - 1);
+        assertTrue(annoncesCard.contains("Page 1 / 3"));
+
+        MvcResult page2Result = mvc.perform(get("/mon-espace?pageAnnonces=1&pageFavoris=0&size=2")
+                        .with(user("camille@example.fr")))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andReturn();
+        String page2Html = page2Result.getResponse().getContentAsString();
+        String page2AnnoncesCard = page2Html.substring(
+                page2Html.indexOf("id=\"mes-annonces\""),
+                page2Html.indexOf("id=\"mes-favoris\""));
+        assertEquals(2, page2AnnoncesCard.split("<li>", -1).length - 1);
+        assertTrue(page2AnnoncesCard.contains("Page 2 /"));
+
+        // Vérification de la pagination de Mes favoris
+        mvc.perform(post("/api/personnes/1/favoris/1").with(httpBasic("camille@example.fr", "password")))
+                .andExpect(status().isOk());
+        mvc.perform(post("/api/personnes/1/favoris/2").with(httpBasic("camille@example.fr", "password")))
+                .andExpect(status().isOk());
+        try {
+            MvcResult favPageResult = mvc.perform(get("/mon-espace?pageAnnonces=0&pageFavoris=1&size=1")
+                            .with(user("camille@example.fr")))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                    .andReturn();
+            String favPageHtml = favPageResult.getResponse().getContentAsString();
+            String favCard = favPageHtml.substring(
+                    favPageHtml.indexOf("id=\"mes-favoris\""),
+                    favPageHtml.indexOf("Mes lots d’objets"));
+            assertTrue(favCard.contains("<span class=\"count-badge\">2</span>"));
+            assertEquals(1, favCard.split("<li>", -1).length - 1);
+            assertTrue(favCard.contains("Page 2 / 2"));
+            assertTrue(favCard.contains("pageFavoris=0"));
+        } finally {
+            mvc.perform(delete("/api/personnes/1/favoris/1").with(httpBasic("camille@example.fr", "password")))
+                    .andExpect(status().isNoContent());
+            mvc.perform(delete("/api/personnes/1/favoris/2").with(httpBasic("camille@example.fr", "password")))
+                    .andExpect(status().isNoContent());
+        }
     }
 }

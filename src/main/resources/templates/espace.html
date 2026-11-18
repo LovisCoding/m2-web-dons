@@ -28,11 +28,11 @@
         <section class="stats-grid" aria-label="Résumé de votre activité">
             <div class="stat-card">
                 <span class="stat-label">Mes annonces</span>
-                <span class="stat-value" th:text="${mesAnnonces.size()}">0</span>
+                <span class="stat-value" th:text="${pageMesAnnonces != null ? pageMesAnnonces.totalElements : mesAnnonces.size()}">0</span>
             </div>
             <div class="stat-card">
                 <span class="stat-label">Favoris</span>
-                <span class="stat-value" th:text="${mesFavoris.size()}">0</span>
+                <span class="stat-value" th:text="${pageMesFavoris != null ? pageMesFavoris.totalElements : mesFavoris.size()}">0</span>
             </div>
             <div class="stat-card">
                 <span class="stat-label">Lots créés</span>
@@ -49,7 +49,7 @@
         </section>
 
         <div class="space-grid">
-            <section class="space-card">
+            <section class="space-card" id="mes-annonces">
                 <div class="space-head">
                     <div class="space-title-group">
                         <span class="card-icon" aria-hidden="true">
@@ -62,7 +62,7 @@
                         </span>
                         <h2>Mes annonces</h2>
                     </div>
-                    <span class="count-badge" th:text="${mesAnnonces.size()}">0</span>
+                    <span class="count-badge" th:text="${pageMesAnnonces != null ? pageMesAnnonces.totalElements : mesAnnonces.size()}">0</span>
                 </div>
                 <p class="meta" th:if="${mesAnnonces.isEmpty()}">Vous n’avez pas encore déposé d’annonce.</p>
                 <ul class="space-list" th:if="${!mesAnnonces.isEmpty()}">
@@ -77,9 +77,21 @@
                         </span>
                     </li>
                 </ul>
+                <nav class="pagination space-pagination" th:if="${pageMesAnnonces != null and pageMesAnnonces.totalPages > 1}" aria-label="Pagination de mes annonces">
+                    <a class="button small secondary" th:if="${pageMesAnnonces.hasPrevious()}"
+                       th:href="@{/mon-espace(pageAnnonces=${pageAnnonces - 1},pageFavoris=${pageFavoris},size=${size})}">
+                        ← Précédent
+                    </a>
+                    <span class="page-info"
+                          th:text="'Page ' + (${pageAnnonces + 1}) + ' / ' + ${pageMesAnnonces.totalPages}">Page 1 / 1</span>
+                    <a class="button small secondary" th:if="${pageMesAnnonces.hasNext()}"
+                       th:href="@{/mon-espace(pageAnnonces=${pageAnnonces + 1},pageFavoris=${pageFavoris},size=${size})}">
+                        Suivant →
+                    </a>
+                </nav>
             </section>
 
-            <section class="space-card">
+            <section class="space-card" id="mes-favoris">
                 <div class="space-head">
                     <div class="space-title-group">
                         <span class="card-icon warm" aria-hidden="true">
@@ -89,7 +101,7 @@
                         </span>
                         <h2>Mes favoris</h2>
                     </div>
-                    <span class="count-badge" th:text="${mesFavoris.size()}">0</span>
+                    <span class="count-badge" th:text="${pageMesFavoris != null ? pageMesFavoris.totalElements : mesFavoris.size()}">0</span>
                 </div>
                 <p class="meta" th:if="${mesFavoris.isEmpty()}">Aucun favori pour le moment.</p>
                 <ul class="space-list" th:if="${!mesFavoris.isEmpty()}">
@@ -107,6 +119,18 @@
                         </form>
                     </li>
                 </ul>
+                <nav class="pagination space-pagination" th:if="${pageMesFavoris != null and pageMesFavoris.totalPages > 1}" aria-label="Pagination de mes favoris">
+                    <a class="button small secondary" th:if="${pageMesFavoris.hasPrevious()}"
+                       th:href="@{/mon-espace(pageAnnonces=${pageAnnonces},pageFavoris=${pageFavoris - 1},size=${size})}">
+                        ← Précédent
+                    </a>
+                    <span class="page-info"
+                          th:text="'Page ' + (${pageFavoris + 1}) + ' / ' + ${pageMesFavoris.totalPages}">Page 1 / 1</span>
+                    <a class="button small secondary" th:if="${pageMesFavoris.hasNext()}"
+                       th:href="@{/mon-espace(pageAnnonces=${pageAnnonces},pageFavoris=${pageFavoris + 1},size=${size})}">
+                        Suivant →
+                    </a>
+                </nav>
             </section>
 
             <section class="space-card">
@@ -147,10 +171,10 @@
                             </form>
                         </li>
                     </ul>
-                    <form class="compact-form" th:if="${!mesAnnonces.isEmpty()}"
+                    <form class="compact-form" th:if="${!(toutesMesAnnonces != null ? toutesMesAnnonces : mesAnnonces).isEmpty()}"
                           th:action="@{/lots/{id}/annonces(id=${lot.id})}" method="post">
                         <select name="listingId" required aria-label="Choisir une annonce à ajouter au lot">
-                            <option th:each="a : ${mesAnnonces}" th:value="${a.id}" th:text="${a.title}"></option>
+                            <option th:each="a : ${toutesMesAnnonces != null ? toutesMesAnnonces : mesAnnonces}" th:value="${a.id}" th:text="${a.title}"></option>
                         </select>
                         <button class="button small secondary" type="submit">Ajouter au lot</button>
                     </form>

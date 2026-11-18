@@ -30,9 +30,12 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
@@ -387,13 +390,31 @@ public class ListingController {
     }
 
     @GetMapping({"/mon-espace", "/mon-espace/"})
-    public String space(Authentication authentication, Model model) {
+    public String space(
+            @RequestParam(defaultValue = "0") int pageAnnonces,
+            @RequestParam(defaultValue = "0") int pageFavoris,
+            @RequestParam(defaultValue = "5") int size,
+            Authentication authentication,
+            Model model) {
         Person connected = authService.requirePerson(authentication);
         Long personId = connected.getId();
-        model.addAttribute("mesAnnonces", listings.findByOwnerIdOrderByPublishedAtDesc(personId));
+        int safeSize = Math.min(Math.max(1, size), 50);
+
+        Page<Listing> pageMesAnnonces = fetchClampedPage(pageAnnonces, safeSize,
+                pageable -> listings.findByOwnerIdOrderByPublishedAtDesc(personId, pageable));
+        Page<Listing> pageMesFavoris = fetchClampedPage(pageFavoris, safeSize,
+                pageable -> favorites.findByPersonIdOrderByIdDesc(personId, pageable))
+                .map(Favorite::getListing);
+
+        model.addAttribute("pageMesAnnonces", pageMesAnnonces);
+        model.addAttribute("mesAnnonces", pageMesAnnonces.getContent());
+        model.addAttribute("toutesMesAnnonces", listings.findByOwnerIdOrderByPublishedAtDesc(personId));
+        model.addAttribute("pageAnnonces", pageMesAnnonces.getNumber());
+        model.addAttribute("pageMesFavoris", pageMesFavoris);
+        model.addAttribute("mesFavoris", pageMesFavoris.getContent());
+        model.addAttribute("pageFavoris", pageMesFavoris.getNumber());
+        model.addAttribute("size", safeSize);
         model.addAttribute("mesLots", lots.findByOwnerId(personId));
-        model.addAttribute("mesFavoris", favorites.findByPersonId(personId).stream()
-                .map(Favorite::getListing).toList());
         model.addAttribute("mesRecherches", searches.findByPersonId(personId));
         model.addAttribute("mesMessages",
                 messages.findBySenderIdOrRecipientIdOrderBySentAtDesc(personId, personId));
@@ -401,6 +422,17 @@ public class ListingController {
                 .filter(p -> !p.getId().equals(personId))
                 .toList());
         return "espace";
+    }
+
+    private static <T> Page<T> fetchClampedPage(
+            int requestedPage, int size, Function<Pageable, Page<T>> fetcher) {
+        int safePage = Math.max(0, requestedPage);
+        Page<T> result = fetcher.apply(PageRequest.of(safePage, size));
+        int totalPages = result.getTotalPages();
+        if (safePage > 0 && totalPages > 0 && safePage >= totalPages) {
+            return fetcher.apply(PageRequest.of(totalPages - 1, size));
+        }
+        return result;
     }
 
     @GetMapping(path = "/personnes/{id}/favoris",

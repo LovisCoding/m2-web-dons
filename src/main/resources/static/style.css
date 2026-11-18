@@ -914,6 +914,18 @@ input[type="file"]::file-selector-button:hover {
     border-radius: var(--radius-pill);
 }
 
+.space-pagination {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.space-pagination .page-info {
+    background: var(--bg-page);
+}
+
 /* Alerts */
 .alert {
     display: flex;
