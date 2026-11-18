@@ -9,30 +9,36 @@
 <body>
     <header th:replace="~{fragments :: header}"></header>
 
-    <main class="detail">
-        <p class="eyebrow">REJOINDRE LA PLATEFORME</p>
-        <h1>Créer un compte</h1>
-        <p class="intro">Inscrivez-vous pour proposer des objets et recevoir des notifications sur vos recherches.</p>
+    <main>
+        <div class="auth-shell">
+            <p class="eyebrow">REJOINDRE LA PLATEFORME</p>
+            <h1>Créer un compte</h1>
+            <p class="intro">Inscrivez-vous pour proposer des objets, sauvegarder vos recherches et discuter avec les donateurs.</p>
 
-        <div class="alert error" th:if="${erreur}" th:text="${erreur}">Erreur</div>
+            <div class="alert error" th:if="${erreur}" th:text="${erreur}" role="alert">Erreur</div>
 
-        <form class="editor" th:action="@{/inscription}" method="post" th:object="${inscription}">
-            <label>
-                Nom affiché
-                <input required th:field="*{name}" placeholder="Alex">
-            </label>
-            <label>
-                Adresse e-mail
-                <input type="email" required th:field="*{email}" placeholder="alex@example.fr">
-            </label>
-            <label>
-                Mot de passe
-                <input type="password" required th:field="*{password}" placeholder="Choisissez un mot de passe">
-            </label>
-            <button class="button" type="submit">Créer mon compte</button>
-        </form>
+            <div class="form-card">
+                <form class="editor" th:action="@{/inscription}" method="post" th:object="${inscription}">
+                    <label>
+                        Nom affiché
+                        <input required autocomplete="name" th:field="*{name}" placeholder="Alex">
+                    </label>
+                    <label>
+                        Adresse e-mail
+                        <input type="email" required autocomplete="email" th:field="*{email}" placeholder="alex@example.fr">
+                    </label>
+                    <label>
+                        Mot de passe
+                        <input type="password" required autocomplete="new-password" th:field="*{password}" placeholder="Choisissez un mot de passe">
+                    </label>
+                    <button class="button" type="submit">Créer mon compte</button>
+                </form>
+            </div>
 
-        <p class="meta">Déjà inscrit ? <a class="text-button" href="/login">Se connecter</a></p>
+            <p class="auth-footer-link">Déjà inscrit ? <a class="text-button" href="/login">Se connecter</a></p>
+        </div>
     </main>
+
+    <footer th:replace="~{fragments :: footer}"></footer>
 </body>
 </html>

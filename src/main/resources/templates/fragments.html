@@ -1,23 +1,88 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <body>
-<header th:fragment="header">
-    <a class="brand" href="/annonces">donner<span>.</span></a>
-    <nav>
-        <a href="/annonces">Explorer</a>
-        <th:block th:if="${utilisateurConnecte != null}">
-            <a href="/mon-espace" th:text="'Mon espace (' + ${utilisateurConnecte.name} + ')'">Mon espace</a>
-            <a class="button small" href="/annonces/nouvelle">Déposer une annonce</a>
-            <form class="inline-form" th:action="@{/logout}" method="post">
-                <button class="text-button" type="submit">Déconnexion</button>
-            </form>
-        </th:block>
-        <th:block th:if="${utilisateurConnecte == null}">
-            <a href="/login">Connexion</a>
-            <a href="/inscription">Inscription</a>
-            <a class="button small" href="/annonces/nouvelle">Déposer une annonce</a>
-        </th:block>
-    </nav>
+<header class="site-header" th:fragment="header">
+    <div class="header-inner">
+        <a class="brand" href="/annonces">
+            <span class="brand-mark" aria-hidden="true">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+                    <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+                </svg>
+            </span>
+            <span>donner<span class="dot">.</span></span>
+        </a>
+        <nav class="main-nav" aria-label="Navigation principale">
+            <a class="nav-link" href="/annonces">
+                <svg class="icon-sm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.3-4.3"/>
+                </svg>
+                <span>Explorer</span>
+            </a>
+            <th:block th:if="${utilisateurConnecte != null}">
+                <a class="user-pill" href="/mon-espace">
+                    <span class="avatar-sm" aria-hidden="true"
+                          th:text="${!#strings.isEmpty(utilisateurConnecte.name) ? #strings.toUpperCase(#strings.substring(utilisateurConnecte.name, 0, 1)) : 'U'}">U</span>
+                    <span th:text="'Mon espace (' + ${utilisateurConnecte.name} + ')'">Mon espace</span>
+                </a>
+                <a class="button small" href="/annonces/nouvelle">
+                    <svg class="icon-sm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14"/>
+                        <path d="M12 5v14"/>
+                    </svg>
+                    <span>Déposer une annonce</span>
+                </a>
+                <form class="inline-form" th:action="@{/logout}" method="post">
+                    <button class="text-button" type="submit">Déconnexion</button>
+                </form>
+            </th:block>
+            <th:block th:if="${utilisateurConnecte == null}">
+                <a class="nav-link" href="/login">Connexion</a>
+                <a class="nav-link" href="/inscription">Inscription</a>
+                <a class="button small" href="/annonces/nouvelle">
+                    <svg class="icon-sm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14"/>
+                        <path d="M12 5v14"/>
+                    </svg>
+                    <span>Déposer une annonce</span>
+                </a>
+            </th:block>
+        </nav>
+    </div>
 </header>
+
+<span th:fragment="stateText(state)" th:switch="${state != null ? state.name() : ''}">
+    <th:block th:case="'NEUF'">Neuf</th:block>
+    <th:block th:case="'TRES_BON'">Très bon état</th:block>
+    <th:block th:case="'BON'">Bon état</th:block>
+    <th:block th:case="'A_REPARER'">À réparer</th:block>
+    <th:block th:case="*" th:text="${state}">BON</th:block>
+</span>
+
+<span th:fragment="deliveryText(mode)" th:switch="${mode != null ? mode.name() : ''}">
+    <th:block th:case="'MAIN_PROPRE'">Main propre</th:block>
+    <th:block th:case="'ENVOI'">Envoi possible</th:block>
+    <th:block th:case="'LES_DEUX'">Main propre ou envoi</th:block>
+    <th:block th:case="*" th:text="${mode}">MAIN_PROPRE</th:block>
+</span>
+
+<footer class="site-footer" th:fragment="footer">
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <svg class="icon-sm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+                <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+            </svg>
+            <span>Donner — Plateforme locale de dons et seconde vie des objets.</span>
+        </div>
+        <div class="footer-links">
+            <a href="/annonces">Explorer les annonces</a>
+            <a href="/annonces/nouvelle">Déposer un objet</a>
+            <a href="/mon-espace">Mon espace</a>
+            <a href="/api/annonces">API JSON / HAL</a>
+        </div>
+    </div>
+</footer>
 </body>
 </html>

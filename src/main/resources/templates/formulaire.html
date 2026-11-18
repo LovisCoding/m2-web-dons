@@ -9,45 +9,66 @@
 <body>
     <header th:replace="~{fragments :: header}"></header>
 
-    <main class="detail">
-        <p class="eyebrow">FAIRE CIRCULER</p>
-        <h1>Proposer un objet</h1>
-        <p class="intro">Un objet utile mérite une nouvelle histoire.</p>
-        <p class="meta" th:if="${utilisateurConnecte != null}">
-            Publié sous le profil : <strong th:text="${utilisateurConnecte.name}">Profil</strong>
-        </p>
+    <main>
+        <div class="form-shell">
+            <a class="breadcrumb" href="/annonces">
+                <svg class="icon-sm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m15 18-6-6 6-6"/>
+                </svg>
+                <span>Retour aux annonces</span>
+            </a>
 
-        <form class="editor" th:action="@{/annonces}" method="post" th:object="${annonce}">
-            <label>
-                Titre
-                <input required maxlength="180" th:field="*{title}">
-            </label>
-            <label>
-                Description
-                <textarea rows="5" th:field="*{description}"></textarea>
-            </label>
-            <label>
-                État
-                <select th:field="*{state}" required>
-                    <option th:each="e : ${etats}" th:value="${e}" th:text="${e}"></option>
-                </select>
-            </label>
-            <label>
-                Ville / zone
-                <input required th:field="*{area}">
-            </label>
-            <label>
-                Mode de remise
-                <select th:field="*{deliveryMode}" required>
-                    <option th:each="m : ${modes}" th:value="${m}" th:text="${m}"></option>
-                </select>
-            </label>
-            <label>
-                Mots-clés (séparés par des virgules)
-                <input th:field="*{keywords}" placeholder="livre, culture">
-            </label>
-            <button class="button" type="submit">Publier l’annonce</button>
-        </form>
+            <p class="eyebrow">FAIRE CIRCULER</p>
+            <h1>Proposer un objet</h1>
+            <p class="intro">Un objet utile mérite une nouvelle histoire. Décrivez-le clairement pour faciliter la remise.</p>
+
+            <div class="form-card">
+                <p class="meta" th:if="${utilisateurConnecte != null}">
+                    Publié sous le profil : <strong th:text="${utilisateurConnecte.name}">Profil</strong>
+                </p>
+
+                <form class="editor" th:action="@{/annonces}" method="post" th:object="${annonce}">
+                    <label>
+                        Titre de l’objet
+                        <input required maxlength="180" th:field="*{title}" placeholder="Ex. Lampe de bureau vintage">
+                    </label>
+                    <label>
+                        Description
+                        <textarea rows="4" th:field="*{description}" placeholder="Dimensions, état précis, détails utiles pour la remise…"></textarea>
+                    </label>
+                    <div class="form-row">
+                        <label>
+                            État
+                            <select th:field="*{state}" required>
+                                <option th:each="e : ${etats}" th:value="${e}"
+                                        th:text="${e.name() == 'NEUF' ? 'Neuf' : (e.name() == 'TRES_BON' ? 'Très bon état' : (e.name() == 'BON' ? 'Bon état' : (e.name() == 'A_REPARER' ? 'À réparer' : e)))}"></option>
+                            </select>
+                        </label>
+                        <label>
+                            Mode de remise
+                            <select th:field="*{deliveryMode}" required>
+                                <option th:each="m : ${modes}" th:value="${m}"
+                                        th:text="${m.name() == 'MAIN_PROPRE' ? 'Main propre' : (m.name() == 'ENVOI' ? 'Envoi possible' : (m.name() == 'LES_DEUX' ? 'Main propre ou envoi' : m))}"></option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <label>
+                            Ville / zone
+                            <input required th:field="*{area}" placeholder="Lyon">
+                        </label>
+                        <label>
+                            Mots-clés
+                            <input th:field="*{keywords}" placeholder="livre, culture">
+                            <span class="form-hint">Séparés par des virgules</span>
+                        </label>
+                    </div>
+                    <button class="button" type="submit">Publier l’annonce</button>
+                </form>
+            </div>
+        </div>
     </main>
+
+    <footer th:replace="~{fragments :: footer}"></footer>
 </body>
 </html>

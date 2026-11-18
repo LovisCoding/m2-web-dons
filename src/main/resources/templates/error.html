@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${(status != null ? status : 'Erreur') + ' · Donner'}">Erreur · Donner</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header th:replace="~{fragments :: header}"></header>
+
+    <main>
+        <section class="empty-state">
+            <div class="empty-icon" aria-hidden="true">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 8v4"/>
+                    <path d="M12 16h.01"/>
+                </svg>
+            </div>
+            <p class="eyebrow" th:text="${status != null ? 'ERREUR ' + status : 'ERREUR'}">ERREUR</p>
+            <h1 th:text="${status == 404 ? 'Page introuvable' : (status == 403 ? 'Accès refusé' : 'Une erreur est survenue')}">
+                Une erreur est survenue
+            </h1>
+            <p th:if="${path != null}" class="meta">
+                Ressource demandée : <code th:text="${path}">/</code>
+            </p>
+            <p th:if="${message != null && !#strings.isEmpty(message) && message != 'No message available'}"
+               th:text="${message}"></p>
+            <p th:if="${message == null || #strings.isEmpty(message) || message == 'No message available'}">
+                La page demandée n’existe pas ou n’est plus disponible.
+            </p>
+            <div class="empty-actions">
+                <a class="button small" href="/annonces">Voir toutes les annonces</a>
+                <a class="button small secondary" href="/annonces/nouvelle">Déposer un objet</a>
+            </div>
+        </section>
+    </main>
+
+    <footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

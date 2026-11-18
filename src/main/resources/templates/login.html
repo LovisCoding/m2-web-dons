@@ -9,40 +9,47 @@
 <body>
     <header th:replace="~{fragments :: header}"></header>
 
-    <main class="detail">
-        <p class="eyebrow">COMPTE PERSONNEL</p>
-        <h1>Connexion</h1>
-        <p class="intro">Connectez-vous pour publier des annonces, enregistrer des recherches, gérer vos lots et échanger par messagerie.</p>
+    <main>
+        <div class="auth-shell">
+            <p class="eyebrow">COMPTE PERSONNEL</p>
+            <h1>Connexion</h1>
+            <p class="intro">Connectez-vous pour publier des annonces, enregistrer des recherches, gérer vos lots et échanger par messagerie.</p>
 
-        <div class="alert error" th:if="${param.error}">
-            Identifiants invalides. Vérifiez votre e-mail et votre mot de passe.
-        </div>
-        <div class="alert success" th:if="${param.logout}">
-            Vous avez bien été déconnecté.
-        </div>
-        <div class="alert success" th:if="${param.inscrit}">
-            Compte créé avec succès. Vous pouvez maintenant vous connecter.
-        </div>
+            <div class="alert error" th:if="${param.error}" role="alert">
+                Identifiants invalides. Vérifiez votre e-mail et votre mot de passe.
+            </div>
+            <div class="alert success" th:if="${param.logout}" role="status">
+                Vous avez bien été déconnecté.
+            </div>
+            <div class="alert success" th:if="${param.inscrit}" role="status">
+                Compte créé avec succès. Vous pouvez maintenant vous connecter.
+            </div>
 
-        <form class="editor" th:action="@{/login}" method="post">
-            <label>
-                E-mail ou nom d’utilisateur
-                <input name="username" required autofocus placeholder="camille@example.fr">
-            </label>
-            <label>
-                Mot de passe
-                <input type="password" name="password" required placeholder="••••••••">
-            </label>
-            <button class="button" type="submit">Se connecter</button>
-        </form>
+            <div class="form-card">
+                <form class="editor" th:action="@{/login}" method="post">
+                    <label>
+                        E-mail ou nom d’utilisateur
+                        <input name="username" autocomplete="username" required autofocus placeholder="camille@example.fr">
+                    </label>
+                    <label>
+                        Mot de passe
+                        <input type="password" name="password" autocomplete="current-password" required placeholder="••••••••">
+                    </label>
+                    <button class="button" type="submit">Se connecter</button>
+                </form>
 
-        <div class="detail-box">
-            <p><b>Comptes de démonstration</b><span>Mot de passe : <code>password</code></span></p>
-            <p><span>Camille</span><code>camille@example.fr</code></p>
-            <p><span>Yanis</span><code>yanis@example.fr</code></p>
+                <div class="demo-box">
+                    <h2>Comptes de démonstration</h2>
+                    <p><span>Mot de passe commun</span><code>password</code></p>
+                    <p><span>Camille</span><code>camille@example.fr</code></p>
+                    <p><span>Yanis</span><code>yanis@example.fr</code></p>
+                </div>
+            </div>
+
+            <p class="auth-footer-link">Pas encore de compte ? <a class="text-button" href="/inscription">Créer un compte</a></p>
         </div>
-
-        <p class="meta">Pas encore de compte ? <a class="text-button" href="/inscription">Créer un compte</a></p>
     </main>
+
+    <footer th:replace="~{fragments :: footer}"></footer>
 </body>
 </html>

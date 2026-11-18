@@ -61,6 +61,15 @@ class WebIntegrationTests {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML));
 
+        // Variantes avec barre oblique finale
+        mvc.perform(get("/annonces/"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML));
+
+        mvc.perform(get("/annonces/1/"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML));
+
         // Négociation de contenu HAL/JSON sur les routes web
         mvc.perform(get("/annonces").accept(MediaTypes.HAL_JSON))
                 .andExpect(status().isOk())

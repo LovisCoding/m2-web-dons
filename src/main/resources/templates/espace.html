@@ -10,33 +10,90 @@
     <header th:replace="~{fragments :: header}"></header>
 
     <main class="space">
-        <p class="eyebrow">ESPACE PERSONNEL</p>
-        <h1 th:text="'Bonjour, ' + ${utilisateurConnecte.name}">Mon espace</h1>
-        <p class="intro">Gérez vos annonces, vos lots d’objets, vos favoris, vos recherches sauvegardées et votre messagerie.</p>
+        <div class="space-header">
+            <div>
+                <p class="eyebrow">ESPACE PERSONNEL</p>
+                <h1 th:text="'Bonjour, ' + ${utilisateurConnecte.name}">Mon espace</h1>
+                <p class="intro">Gérez vos annonces, vos lots d’objets, vos favoris, vos recherches sauvegardées et votre messagerie.</p>
+            </div>
+            <a class="button" href="/annonces/nouvelle">
+                <svg class="icon-sm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"/>
+                    <path d="M12 5v14"/>
+                </svg>
+                <span>Nouvelle annonce</span>
+            </a>
+        </div>
+
+        <section class="stats-grid" aria-label="Résumé de votre activité">
+            <div class="stat-card">
+                <span class="stat-label">Mes annonces</span>
+                <span class="stat-value" th:text="${mesAnnonces.size()}">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Favoris</span>
+                <span class="stat-value" th:text="${mesFavoris.size()}">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Lots créés</span>
+                <span class="stat-value" th:text="${mesLots.size()}">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Alertes recherche</span>
+                <span class="stat-value" th:text="${mesRecherches.size()}">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Messages</span>
+                <span class="stat-value" th:text="${mesMessages.size()}">0</span>
+            </div>
+        </section>
 
         <div class="space-grid">
             <section class="space-card">
                 <div class="space-head">
-                    <h2>Mes annonces</h2>
-                    <a class="button small" href="/annonces/nouvelle">Nouvelle annonce</a>
+                    <div class="space-title-group">
+                        <span class="card-icon" aria-hidden="true">
+                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m7.5 4.27 9 5.15"/>
+                                <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                                <path d="m3.3 7 8.7 5 8.7-5"/>
+                                <path d="M12 22V12"/>
+                            </svg>
+                        </span>
+                        <h2>Mes annonces</h2>
+                    </div>
+                    <span class="count-badge" th:text="${mesAnnonces.size()}">0</span>
                 </div>
                 <p class="meta" th:if="${mesAnnonces.isEmpty()}">Vous n’avez pas encore déposé d’annonce.</p>
                 <ul class="space-list" th:if="${!mesAnnonces.isEmpty()}">
                     <li th:each="a : ${mesAnnonces}">
                         <a th:href="@{/annonces/{id}(id=${a.id})}" th:text="${a.title}">Titre</a>
-                        <span class="meta" th:text="${a.area} + ' · ' + ${a.state}">Lyon · BON</span>
+                        <span class="state-badge" th:attr="data-state=${a.state}">
+                            <span th:text="${a.area} + ' · '">Lyon · </span>
+                            <span th:replace="~{fragments :: stateText(${a.state})}">BON</span>
+                        </span>
                     </li>
                 </ul>
             </section>
 
             <section class="space-card">
-                <h2>Mes favoris</h2>
+                <div class="space-head">
+                    <div class="space-title-group">
+                        <span class="card-icon warm" aria-hidden="true">
+                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                            </svg>
+                        </span>
+                        <h2>Mes favoris</h2>
+                    </div>
+                    <span class="count-badge" th:text="${mesFavoris.size()}">0</span>
+                </div>
                 <p class="meta" th:if="${mesFavoris.isEmpty()}">Aucun favori pour le moment.</p>
                 <ul class="space-list" th:if="${!mesFavoris.isEmpty()}">
                     <li th:each="fav : ${mesFavoris}">
                         <div>
                             <a th:href="@{/annonces/{id}(id=${fav.id})}" th:text="${fav.title}">Titre</a>
-                            <span class="meta" th:text="${fav.area} + ' · ' + ${fav.owner.name}">Lyon</span>
+                            <div class="meta" th:text="${fav.area} + ' · ' + ${fav.owner.name}">Lyon</div>
                         </div>
                         <form th:action="@{/annonces/{id}/favoris/supprimer(id=${fav.id})}" method="post">
                             <input type="hidden" name="redirect" value="espace">
@@ -47,7 +104,20 @@
             </section>
 
             <section class="space-card">
-                <h2>Mes lots d’objets</h2>
+                <div class="space-head">
+                    <div class="space-title-group">
+                        <span class="card-icon" aria-hidden="true">
+                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="7" height="7" x="3" y="3" rx="1"/>
+                                <rect width="7" height="7" x="14" y="3" rx="1"/>
+                                <rect width="7" height="7" x="14" y="14" rx="1"/>
+                                <rect width="7" height="7" x="3" y="14" rx="1"/>
+                            </svg>
+                        </span>
+                        <h2>Mes lots d’objets</h2>
+                    </div>
+                    <span class="count-badge" th:text="${mesLots.size()}">0</span>
+                </div>
                 <form class="compact-form" th:action="@{/lots}" method="post">
                     <label>
                         Nom du nouveau lot
@@ -73,7 +143,7 @@
                     </ul>
                     <form class="compact-form" th:if="${!mesAnnonces.isEmpty()}"
                           th:action="@{/lots/{id}/annonces(id=${lot.id})}" method="post">
-                        <select name="listingId" required>
+                        <select name="listingId" required aria-label="Choisir une annonce à ajouter au lot">
                             <option th:each="a : ${mesAnnonces}" th:value="${a.id}" th:text="${a.title}"></option>
                         </select>
                         <button class="button small secondary" type="submit">Ajouter au lot</button>
@@ -82,7 +152,18 @@
             </section>
 
             <section class="space-card">
-                <h2>Recherches sauvegardées</h2>
+                <div class="space-head">
+                    <div class="space-title-group">
+                        <span class="card-icon warm" aria-hidden="true">
+                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+                                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+                            </svg>
+                        </span>
+                        <h2>Recherches sauvegardées</h2>
+                    </div>
+                    <span class="count-badge" th:text="${mesRecherches.size()}">0</span>
+                </div>
                 <p class="meta" th:if="${mesRecherches.isEmpty()}">Aucune recherche enregistrée.</p>
                 <ul class="space-list" th:if="${!mesRecherches.isEmpty()}">
                     <li th:each="s : ${mesRecherches}">
@@ -91,9 +172,13 @@
                                th:text="${(s.query != null ? s.query : 'Toutes') + (s.area != null ? ' · ' + s.area : '') + (s.state != null ? ' · ' + s.state : '') + (s.keyword != null ? ' · #' + s.keyword : '')}">
                                 Critères
                             </a>
-                            <span class="meta" th:text="${s.notifications ? 'Notifications actives' : 'Notifications désactivées'}">
-                                Notifications actives
-                            </span>
+                            <div>
+                                <span class="status-badge"
+                                      th:classappend="${s.notifications ? ' active' : ' inactive'}"
+                                      th:text="${s.notifications ? 'Notifications actives' : 'Notifications désactivées'}">
+                                    Notifications actives
+                                </span>
+                            </div>
                         </div>
                         <div class="inline-actions">
                             <form th:action="@{/recherches/{id}/notifications(id=${s.id})}" method="post">
@@ -111,33 +196,51 @@
         </div>
 
         <section class="space-card message-section">
-            <h2>Messagerie interne</h2>
-            <form class="editor" th:if="${!destinataires.isEmpty()}" th:action="@{/messages}" method="post">
-                <label>
-                    Destinataire
-                    <select name="recipientId" required>
-                        <option th:each="d : ${destinataires}" th:value="${d.id}" th:text="${d.name}"></option>
-                    </select>
-                </label>
-                <label>
-                    Message
-                    <textarea name="body" rows="2" required maxlength="4000" placeholder="Écrire un message…"></textarea>
-                </label>
-                <button class="button small" type="submit">Envoyer</button>
-            </form>
-            <p class="meta" th:if="${mesMessages.isEmpty()}">Aucun message pour le moment.</p>
-            <ul class="space-list" th:if="${!mesMessages.isEmpty()}">
-                <li th:each="m : ${mesMessages}">
-                    <div>
-                        <strong th:text="${m.sender.name} + ' → ' + ${m.recipient.name}">A → B</strong>
-                        <span class="meta" th:if="${m.listing != null}">
-                            · <a th:href="@{/annonces/{id}(id=${m.listing.id})}" th:text="${m.listing.title}">Annonce</a>
-                        </span>
-                        <p class="message-body" th:text="${m.body}">Contenu</p>
-                    </div>
-                </li>
-            </ul>
+            <div class="space-head">
+                <div class="space-title-group">
+                    <span class="card-icon" aria-hidden="true">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                    </span>
+                    <h2>Messagerie interne</h2>
+                </div>
+                <span class="count-badge" th:text="${mesMessages.size()}">0</span>
+            </div>
+
+            <div class="message-grid">
+                <form class="editor" th:if="${!destinataires.isEmpty()}" th:action="@{/messages}" method="post">
+                    <label>
+                        Destinataire
+                        <select name="recipientId" required>
+                            <option th:each="d : ${destinataires}" th:value="${d.id}" th:text="${d.name}"></option>
+                        </select>
+                    </label>
+                    <label>
+                        Message
+                        <textarea name="body" rows="3" required maxlength="4000" placeholder="Écrire un message…"></textarea>
+                    </label>
+                    <button class="button small" type="submit">Envoyer le message</button>
+                </form>
+
+                <div>
+                    <p class="meta" th:if="${mesMessages.isEmpty()}">Aucun message pour le moment.</p>
+                    <ul class="space-list" th:if="${!mesMessages.isEmpty()}">
+                        <li class="message-item" th:each="m : ${mesMessages}">
+                            <div class="message-header">
+                                <strong th:text="${m.sender.name} + ' → ' + ${m.recipient.name}">A → B</strong>
+                                <span class="meta" th:if="${m.listing != null}">
+                                    <a th:href="@{/annonces/{id}(id=${m.listing.id})}" th:text="${m.listing.title}">Annonce</a>
+                                </span>
+                            </div>
+                            <p class="message-body" th:text="${m.body}">Contenu</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </section>
     </main>
+
+    <footer th:replace="~{fragments :: footer}"></footer>
 </body>
 </html>

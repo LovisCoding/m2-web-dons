@@ -87,12 +87,12 @@ public class ListingController {
         return "redirect:/annonces";
     }
 
-    @GetMapping("/login")
+    @GetMapping({"/login", "/login/"})
     public String login() {
         return "login";
     }
 
-    @GetMapping("/inscription")
+    @GetMapping({"/inscription", "/inscription/"})
     public String registerForm(Model model) {
         model.addAttribute("inscription", new RegisterForm());
         return "inscription";
@@ -113,7 +113,7 @@ public class ListingController {
         return "redirect:/login?inscrit";
     }
 
-    @GetMapping("/annonces")
+    @GetMapping({"/annonces", "/annonces/"})
     public Object index(
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String zone,
@@ -146,7 +146,7 @@ public class ListingController {
         return "annonces";
     }
 
-    @GetMapping("/annonces/nouvelle")
+    @GetMapping({"/annonces/nouvelle", "/annonces/nouvelle/"})
     public String form(Model model) {
         model.addAttribute("annonce", new ListingForm());
         model.addAttribute("etats", ItemState.values());
@@ -171,7 +171,7 @@ public class ListingController {
         return "redirect:/annonces/" + listing.getId();
     }
 
-    @GetMapping("/annonces/{id:[0-9]+}")
+    @GetMapping({"/annonces/{id:[0-9]+}", "/annonces/{id:[0-9]+}/"})
     public Object detail(@PathVariable Long id, Authentication authentication,
             HttpServletRequest request, Model model) {
         if (wantsJson(request)) {
@@ -347,7 +347,7 @@ public class ListingController {
         return "redirect:/mon-espace";
     }
 
-    @GetMapping("/mon-espace")
+    @GetMapping({"/mon-espace", "/mon-espace/"})
     public String space(Authentication authentication, Model model) {
         Person connected = authService.requirePerson(authentication);
         Long personId = connected.getId();

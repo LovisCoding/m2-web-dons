@@ -1,6 +1,6 @@
 # Donner - plateforme de dons
 
-Application Spring Boot avec rendu Thymeleaf, API JSON/HAL, JPA et base H2 en développement.
+Application Spring Boot avec rendu Thymeleaf, API JSON/HAL, authentification Spring Security, JPA, migrations Flyway et base H2 en développement.
 
 ## Lancer
 
@@ -11,76 +11,85 @@ Application Spring Boot avec rendu Thymeleaf, API JSON/HAL, JPA et base H2 en d�
 ```
 
 L’application est accessible sur <http://localhost:8080/annonces>. La console H2 est sur `/h2-console`.
-La base locale persistante se trouve dans `./data/donner`. Pour configurer une base externe, fournir
-`DATABASE_URL`, `DATABASE_USER` et `DATABASE_PASSWORD`. PostgreSQL est inclus comme pilote de production.
+La base locale persistante se trouve dans `./data/donner`, initialisée et validée par Flyway
+(`src/main/resources/db/migration/V1__init_schema.sql`, `V2__add_authentication.sql`).
+Pour configurer une base externe, fournir `DATABASE_URL`, `DATABASE_USER` et `DATABASE_PASSWORD`.
+PostgreSQL est inclus comme pilote de production.
 La configuration `server.forward-headers-strategy=framework` prend en charge les en-têtes `X-Forwarded-*`
 transmis par un reverse proxy.
 
 ## Modèle
 
-- `Person` publie des `Listing`.
+- `Person` publie des `Listing` et s’authentifie via e-mail/nom et mot de passe haché (BCrypt).
 - Une annonce porte son état, sa date, sa zone, son mode de remise et ses mots-clés.
 - `Favorite` relie un profil à une annonce.
 - `SavedSearch` mémorise les critères et le réglage des notifications.
 - `ItemLot` regroupe les annonces d’un même propriétaire.
 - `Message` relie expéditeur, destinataire et éventuellement une annonce.
 
+## Authentification et comptes de démonstration
+
+- **Interface Web** : connexion par session (`POST /login` via `/login`), inscription (`GET/POST /inscription`), déconnexion (`POST /logout`) et espace personnel (`/mon-espace`).
+- **API REST/HAL** : authentification HTTP Basic (avec code `401 Unauthorized` sans identifiants et `403 Forbidden` si la ressource appartient à un autre utilisateur).
+- **Comptes de démonstration** (créés au démarrage si la base est vide, mot de passe `password`) :
+  - Camille (ID `1`) : `camille@example.fr` / `password`
+  - Yanis (ID `2`) : `yanis@example.fr` / `password`
+
 ## Routes
 
 | Ressource | URL | Méthodes |
 |---|---|---|
-| Annonces HTML | `/annonces`, `/annonces/{id}` | GET |
+| Annonces HTML / négociées | `/annonces`, `/annonces/{id}` | GET |
 | Création HTML | `/annonces/nouvelle`, `/annonces` | GET, POST |
-| Actions annonce HTML | `/annonces/{id}/favoris`, `/messages`, `/modifier`, `/supprimer` | POST |
+| Actions annonce HTML | `/annonces/{id}/favoris`, `/favoris/supprimer`, `/messages`, `/modifier`, `/supprimer` | POST |
+| Authentification & Espace | `/login`, `/inscription`, `/logout`, `/mon-espace` | GET, POST |
+| Recherches, lots, messages HTML | `/recherches`, `/recherches/{id}/*`, `/lots`, `/lots/{id}/*`, `/messages` | POST |
 | Annonces API HAL/JSON | `/api/annonces`, `/api/annonces/{id}` | GET, POST, PUT, DELETE |
-| Profils | `/api/personnes` | GET, POST |
+| Profils | `/api/personnes`, `/api/personnes/{id}` | GET, POST |
 | Favoris | `/api/personnes/{id}/favoris`, `/api/personnes/{id}/favoris/{annonceId}` | GET, POST, DELETE |
-| Recherches sauvegardées | `/api/personnes/{id}/recherches`, `/api/recherches/{id}` | GET, POST, PUT, PATCH, DELETE |
+| Recherches sauvegardées | `/api/personnes/{id}/recherches`, `/api/recherches/{id}`, `/api/recherches/{id}/notifications` | GET, POST, PUT, PATCH, DELETE |
 | Lots | `/api/personnes/{id}/lots`, `/api/lots/{id}` | GET, POST, DELETE |
 | Annonces d’un lot | `/api/lots/{lotId}/annonces/{annonceId}` | POST, DELETE |
-| Messages | `/api/personnes/{id}/messages`, `/api/messages` | GET, POST |
+| Messages | `/api/personnes/{id}/messages`, `/api/messages`, `/api/messages/{id}` | GET, POST |
 
-Les recherches HTML acceptent `q`, `zone`, `etat` et `motCle`. L’API utilise `ETag`, `If-None-Match`
-et une durée `Cache-Control` pour ses réponses GET. Les notifications sont simulées dans les journaux.
+Les recherches acceptent `q`, `zone`, `etat` et `motCle`, ainsi que les paramètres de pagination et de tri
+`page`, `size` et `sort` (`publishedAt,desc`, `publishedAt,asc`, `title,asc`, `area,asc`).
+La négociation de contenu est prise en charge via l’en-tête `Accept` (`text/html`, `application/hal+json`,
+`application/json`) sur `/annonces`, `/annonces/{id}` ainsi que sur `/personnes/{id}/favoris`,
+`/personnes/{id}/recherches`, `/personnes/{id}/lots` et `/personnes/{id}/messages`.
+L’API et les routes d’annonces utilisent `ETag`, `If-None-Match` et une durée `Cache-Control` pour les réponses GET.
+Les notifications sont simulées dans les journaux.
 
 ### Exemples
 
-Créer une annonce :
+Créer une annonce (en tant que Camille) :
 
 ```sh
-curl -X POST http://localhost:8080/api/annonces \
+curl -u camille@example.fr:password -X POST http://localhost:8080/api/annonces \
   -H 'Content-Type: application/json' \
-  -d '{"title":"Chaise en bois","description":"En bon état","state":"BON","area":"Lyon","deliveryMode":"MAIN_PROPRE","ownerId":1,"keywords":["meuble"]}'
+  -d '{"title":"Chaise en bois","description":"En bon état","state":"BON","area":"Lyon","deliveryMode":"MAIN_PROPRE","keywords":["meuble"]}'
 ```
 
-Ajouter une annonce aux favoris d’un profil :
+Ajouter une annonce aux favoris d’un profil (en tant que Yanis) :
 
 ```sh
-curl -X POST http://localhost:8080/api/personnes/2/favoris/1
+curl -u yanis@example.fr:password -X POST http://localhost:8080/api/personnes/2/favoris/1
 ```
 
-Envoyer un message :
+Envoyer un message (en tant que Yanis) :
 
 ```sh
-curl -X POST http://localhost:8080/api/messages \
+curl -u yanis@example.fr:password -X POST http://localhost:8080/api/messages \
   -H 'Content-Type: application/json' \
-  -d '{"senderId":2,"recipientId":1,"listingId":1,"body":"Est-elle toujours disponible ?"}'
+  -d '{"recipientId":1,"listingId":1,"body":"Est-elle toujours disponible ?"}'
 ```
-
-## Profils de démonstration et limites
-
-Les données initiales créent Camille (ID 1) et Yanis (ID 2). Les formulaires et exemples utilisent ces profils
-pour le TP. Il n’y a pas encore d’authentification : les identifiants `ownerId`/`personId` fournis par un client
-ne prouvent pas son identité. Ne pas exposer cette version telle quelle en production.
 
 ## TODO restant
 
-- [ ] Ajouter une authentification réelle et lier les autorisations à l’utilisateur connecté.
-- [ ] Compléter les liens HAL et la négociation de contenu pour favoris, recherches, lots et messages.
-- [ ] Ajouter pagination/tri et migrations de schéma versionnées.
-- [ ] Étendre les tests d’intégration aux opérations d’écriture des annonces, favoris, recherches, lots et messages.
-- [ ] Ajouter un Maven Wrapper si l’environnement de remise ne fournit pas Maven.
-- [ ] Préparer l’archive ZIP avec sources, tests et historique Git.
+- [x] Ajouter une authentification réelle et lier les autorisations à l’utilisateur connecté.
+- [x] Compléter les liens HAL et la négociation de contenu pour favoris, recherches, lots et messages.
+- [x] Ajouter pagination/tri et migrations de schéma versionnées.
+- [x] Étendre les tests d’intégration aux opérations d’écriture des annonces, favoris, recherches, lots et messages.
 
 Le PDF de synthèse est volontairement exclu à la demande de l’utilisateur.
 

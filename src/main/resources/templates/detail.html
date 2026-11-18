@@ -9,84 +9,154 @@
 <body>
     <header th:replace="~{fragments :: header}"></header>
 
-    <main class="detail">
-        <p class="eyebrow" th:text="${annonce.area}">Ville</p>
-        <h1 th:text="${annonce.title}">Objet</h1>
-        <p class="intro" th:text="${annonce.description}">Description</p>
-        <p class="meta">Publiée le <time th:datetime="${annonce.publishedAt}"
-                th:text="${datePublication}">18/11/2026</time></p>
+    <main>
+        <a class="breadcrumb" href="/annonces">
+            <svg class="icon-sm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6"/>
+            </svg>
+            <span>Retour aux annonces</span>
+        </a>
 
-        <div class="alert success" th:if="${param.messageEnvoye}">
-            Votre message a bien été envoyé au donateur.
+        <div class="alert success" th:if="${param.messageEnvoye}" role="status">
+            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <path d="m9 11 3 3L22 4"/>
+            </svg>
+            <span>Votre message a bien été envoyé au donateur.</span>
         </div>
 
-        <div class="detail-box">
-            <p>
-                <b>État</b>
-                <span th:text="${annonce.state}">BON</span>
-            </p>
-            <p>
-                <b>Remise</b>
-                <span th:text="${annonce.deliveryMode}">MAIN_PROPRE</span>
-            </p>
-            <p>
-                <b>Proposé par</b>
-                <span th:text="${annonce.owner.name}">Donateur</span>
-            </p>
+        <div class="detail-grid">
+            <div>
+                <article class="detail-main-card">
+                    <p class="eyebrow">
+                        <svg class="icon-sm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        <span th:text="${annonce.area}">Ville</span>
+                    </p>
+                    <h1 th:text="${annonce.title}">Objet</h1>
+                    <p class="meta">Publiée le <time th:datetime="${annonce.publishedAt}"
+                            th:text="${datePublication}">18/11/2026</time></p>
+
+                    <h2 class="detail-section-title">Description</h2>
+                    <p class="intro" th:text="${#strings.isEmpty(annonce.description) ? 'Aucune description complémentaire fournie par le donateur.' : annonce.description}">Description</p>
+
+                    <div th:if="${!annonce.keywords.isEmpty()}">
+                        <h2 class="detail-section-title">Mots-clés</h2>
+                        <div class="tags">
+                            <span th:each="tag : ${annonce.keywords}" th:text="'#' + ${tag}">#mot</span>
+                        </div>
+                    </div>
+                </article>
+
+                <details class="owner-tools" th:if="${estProprietaire}">
+                    <summary>
+                        <span>Modifier ou supprimer cette annonce (propriétaire)</span>
+                        <svg class="icon-sm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m6 9 6 6 6-6"/>
+                        </svg>
+                    </summary>
+                    <form th:action="@{/annonces/{id}/modifier(id=${annonce.id})}" method="post">
+                        <label>Titre<input name="title" required maxlength="180" th:value="${annonce.title}"></label>
+                        <label>Description<textarea name="description" rows="4" th:text="${annonce.description}"></textarea></label>
+                        <div class="form-row">
+                            <label>État<select name="state" required>
+                                <option th:each="e : ${T(fr.donner.domain.ItemState).values()}" th:value="${e}"
+                                        th:text="${e.name() == 'NEUF' ? 'Neuf' : (e.name() == 'TRES_BON' ? 'Très bon état' : (e.name() == 'BON' ? 'Bon état' : (e.name() == 'A_REPARER' ? 'À réparer' : e)))}"
+                                        th:selected="${annonce.state == e}"></option>
+                            </select></label>
+                            <label>Mode de remise<select name="deliveryMode" required>
+                                <option th:each="m : ${T(fr.donner.domain.DeliveryMode).values()}" th:value="${m}"
+                                        th:text="${m.name() == 'MAIN_PROPRE' ? 'Main propre' : (m.name() == 'ENVOI' ? 'Envoi possible' : (m.name() == 'LES_DEUX' ? 'Main propre ou envoi' : m))}"
+                                        th:selected="${annonce.deliveryMode == m}"></option>
+                            </select></label>
+                        </div>
+                        <div class="form-row">
+                            <label>Ville / zone<input name="area" required th:value="${annonce.area}"></label>
+                            <label>Mots-clés<input name="keywords" th:value="${#strings.listJoin(annonce.keywords, ', ')}"></label>
+                        </div>
+                        <button class="button" type="submit">Enregistrer les modifications</button>
+                    </form>
+                    <div class="danger-zone">
+                        <form th:action="@{/annonces/{id}/supprimer(id=${annonce.id})}" method="post">
+                            <button class="danger-button" type="submit">Supprimer l’annonce</button>
+                        </form>
+                    </div>
+                </details>
+            </div>
+
+            <aside class="detail-sidebar">
+                <div class="detail-box">
+                    <p>
+                        <b>État</b>
+                        <span class="state-badge" th:attr="data-state=${annonce.state}">
+                            <span th:replace="~{fragments :: stateText(${annonce.state})}">BON</span>
+                        </span>
+                    </p>
+                    <p>
+                        <b>Remise</b>
+                        <span th:replace="~{fragments :: deliveryText(${annonce.deliveryMode})}">Main propre</span>
+                    </p>
+                    <p>
+                        <b>Localisation</b>
+                        <span th:text="${annonce.area}">Lyon</span>
+                    </p>
+                    <p>
+                        <b>Proposé par</b>
+                        <span class="owner-info">
+                            <span class="avatar-sm warm" aria-hidden="true"
+                                  th:text="${!#strings.isEmpty(annonce.owner.name) ? #strings.toUpperCase(#strings.substring(annonce.owner.name, 0, 1)) : 'D'}">D</span>
+                            <span th:text="${annonce.owner.name}">Donateur</span>
+                        </span>
+                    </p>
+                </div>
+
+                <section class="actions" th:if="${utilisateurConnecte != null}">
+                    <form th:if="${!estFavori}" th:action="@{/annonces/{id}/favoris(id=${annonce.id})}" method="post">
+                        <button class="button secondary" type="submit">
+                            <svg class="icon-sm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                            </svg>
+                            <span>Ajouter aux favoris</span>
+                        </button>
+                    </form>
+                    <form th:if="${estFavori}" th:action="@{/annonces/{id}/favoris/supprimer(id=${annonce.id})}" method="post">
+                        <button class="button secondary" type="submit">
+                            <svg class="icon-sm" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                            </svg>
+                            <span>Retirer des favoris</span>
+                        </button>
+                    </form>
+
+                    <form th:action="@{/annonces/{id}/messages(id=${annonce.id})}" method="post">
+                        <p class="meta">Message envoyé en tant que <strong th:text="${utilisateurConnecte.name}">Profil</strong></p>
+                        <label>
+                            Contacter le donateur
+                            <textarea name="body" rows="3" required maxlength="4000" placeholder="Bonjour, cet objet est-il toujours disponible ?"></textarea>
+                        </label>
+                        <button class="button" type="submit">
+                            <svg class="icon-sm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m22 2-7 20-4-9-9-4Z"/>
+                                <path d="M22 2 11 13"/>
+                            </svg>
+                            <span>Envoyer le message</span>
+                        </button>
+                    </form>
+                </section>
+
+                <section class="actions" th:if="${utilisateurConnecte == null}">
+                    <p class="meta">
+                        Connectez-vous pour enregistrer cet objet dans vos favoris ou contacter <strong th:text="${annonce.owner.name}">le donateur</strong>.
+                    </p>
+                    <a class="button" href="/login">Se connecter pour contacter</a>
+                    <a class="button secondary" href="/inscription">Créer un compte</a>
+                </section>
+            </aside>
         </div>
-
-        <h2>Mots-clés</h2>
-        <div class="tags">
-            <span th:each="tag : ${annonce.keywords}" th:text="${tag}">mot</span>
-        </div>
-
-        <section class="actions" th:if="${utilisateurConnecte != null}">
-            <form th:if="${!estFavori}" th:action="@{/annonces/{id}/favoris(id=${annonce.id})}" method="post">
-                <button class="button" type="submit">Ajouter aux favoris</button>
-            </form>
-            <form th:if="${estFavori}" th:action="@{/annonces/{id}/favoris/supprimer(id=${annonce.id})}" method="post">
-                <button class="button secondary" type="submit">Retirer des favoris</button>
-            </form>
-
-            <form th:action="@{/annonces/{id}/messages(id=${annonce.id})}" method="post">
-                <p class="meta">Message envoyé en tant que <strong th:text="${utilisateurConnecte.name}">Profil</strong></p>
-                <label>
-                    Votre message au donateur
-                    <textarea name="body" rows="3" required maxlength="4000"></textarea>
-                </label>
-                <button class="button" type="submit">Envoyer le message</button>
-            </form>
-        </section>
-
-        <section class="actions" th:if="${utilisateurConnecte == null}">
-            <p class="meta">
-                <a class="text-button" href="/login">Connectez-vous</a> pour ajouter cette annonce aux favoris ou contacter le donateur.
-            </p>
-        </section>
-
-        <details class="owner-tools" th:if="${estProprietaire}">
-            <summary>Modifier ou supprimer (propriétaire)</summary>
-            <form th:action="@{/annonces/{id}/modifier(id=${annonce.id})}" method="post">
-                <label>Titre<input name="title" required maxlength="180" th:value="${annonce.title}"></label>
-                <label>Description<textarea name="description" rows="4" th:text="${annonce.description}"></textarea></label>
-                <label>État<select name="state" required>
-                    <option th:each="e : ${T(fr.donner.domain.ItemState).values()}" th:value="${e}"
-                            th:text="${e}" th:selected="${annonce.state == e}"></option>
-                </select></label>
-                <label>Ville / zone<input name="area" required th:value="${annonce.area}"></label>
-                <label>Remise<select name="deliveryMode" required>
-                    <option th:each="m : ${T(fr.donner.domain.DeliveryMode).values()}" th:value="${m}"
-                            th:text="${m}" th:selected="${annonce.deliveryMode == m}"></option>
-                </select></label>
-                <label>Mots-clés<input name="keywords" th:value="${#strings.listJoin(annonce.keywords, ', ')}"></label>
-                <button class="button" type="submit">Enregistrer</button>
-            </form>
-            <form th:action="@{/annonces/{id}/supprimer(id=${annonce.id})}" method="post">
-                <button class="danger-button" type="submit">Supprimer l’annonce</button>
-            </form>
-        </details>
-
-        <a class="button" href="/annonces">Retour aux annonces</a>
     </main>
+
+    <footer th:replace="~{fragments :: footer}"></footer>
 </body>
 </html>
