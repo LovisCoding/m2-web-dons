@@ -6,3 +6,7 @@ data
 .vscode
 Dockerfile
 .dockerignore
+.env
+.env.*
+.gemini
+.opencode

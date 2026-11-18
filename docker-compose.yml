@@ -21,9 +21,12 @@ services:
       DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "8080:8080"
+    volumes:
+      - appdata:/app/data
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   pgdata:
+  appdata:
