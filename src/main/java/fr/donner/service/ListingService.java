@@ -16,18 +16,21 @@ public class ListingService {
     private final FavoriteRepository favorites;
     private final ItemLotRepository lots;
     private final MessageRepository messages;
+    private final PhotoStorageService photoStorage;
 
     public ListingService(ListingRepository listings, FavoriteRepository favorites,
-            ItemLotRepository lots, MessageRepository messages) {
+            ItemLotRepository lots, MessageRepository messages, PhotoStorageService photoStorage) {
         this.listings = listings;
         this.favorites = favorites;
         this.lots = lots;
         this.messages = messages;
+        this.photoStorage = photoStorage;
     }
 
     @Transactional
     public void delete(Listing listing) {
         Long id = listing.getId();
+        String imageUrl = listing.getImageUrl();
         favorites.deleteByListingId(id);
         messages.detachFromListing(id);
         List<ItemLot> containing = lots.findAll().stream()
@@ -35,5 +38,6 @@ public class ListingService {
                 .toList();
         lots.saveAll(containing);
         listings.delete(listing);
+        photoStorage.deleteIfLocalUpload(imageUrl);
     }
 }

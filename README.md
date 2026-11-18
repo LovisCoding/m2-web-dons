@@ -41,10 +41,11 @@ transmis par un reverse proxy.
 |---|---|---|
 | Annonces HTML / négociées | `/annonces`, `/annonces/{id}` | GET |
 | Création HTML | `/annonces/nouvelle`, `/annonces` | GET, POST |
+| Photos importées | `/uploads/{filename}` | GET |
 | Actions annonce HTML | `/annonces/{id}/favoris`, `/favoris/supprimer`, `/messages`, `/modifier`, `/supprimer` | POST |
 | Authentification & Espace | `/login`, `/inscription`, `/logout`, `/mon-espace` | GET, POST |
 | Recherches, lots, messages HTML | `/recherches`, `/recherches/{id}/*`, `/lots`, `/lots/{id}/*`, `/messages` | POST |
-| Annonces API HAL/JSON | `/api/annonces`, `/api/annonces/{id}` | GET, POST, PUT, DELETE |
+| Annonces API HAL/JSON | `/api/annonces`, `/api/annonces/{id}`, `/api/annonces/{id}/photo` | GET, POST, PUT, DELETE |
 | Profils | `/api/personnes`, `/api/personnes/{id}` | GET, POST |
 | Favoris | `/api/personnes/{id}/favoris`, `/api/personnes/{id}/favoris/{annonceId}` | GET, POST, DELETE |
 | Recherches sauvegardées | `/api/personnes/{id}/recherches`, `/api/recherches/{id}`, `/api/recherches/{id}/notifications` | GET, POST, PUT, PATCH, DELETE |

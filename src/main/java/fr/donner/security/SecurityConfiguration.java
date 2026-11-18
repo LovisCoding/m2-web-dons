@@ -54,7 +54,7 @@ public class SecurityConfiguration {
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET,
-                                "/", "/style.css", "/login", "/login/", "/inscription", "/inscription/", "/error",
+                                "/", "/style.css", "/uploads/*", "/login", "/login/", "/inscription", "/inscription/", "/error",
                                 "/annonces", "/annonces/", "/annonces/{id:[0-9]+}", "/annonces/{id:[0-9]+}/",
                                 "/personnes/*/lots",
                                 "/api/annonces", "/api/annonces/", "/api/annonces/*",

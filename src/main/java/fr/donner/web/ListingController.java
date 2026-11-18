@@ -17,23 +17,29 @@ import fr.donner.repo.SavedSearchRepository;
 import fr.donner.security.AuthService;
 import fr.donner.service.ListingService;
 import fr.donner.service.NotificationService;
+import fr.donner.service.PhotoStorageService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.Duration;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +51,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 @Controller
@@ -57,6 +64,7 @@ public class ListingController {
     private final MessageRepository messages;
     private final NotificationService notifications;
     private final ListingService listingService;
+    private final PhotoStorageService photoStorage;
     private final AuthService authService;
     private final ApiController apiController;
 
@@ -64,7 +72,7 @@ public class ListingController {
             FavoriteRepository favorites, SavedSearchRepository searches,
             ItemLotRepository lots, MessageRepository messages,
             NotificationService notifications, ListingService listingService,
-            AuthService authService, ApiController apiController) {
+            PhotoStorageService photoStorage, AuthService authService, ApiController apiController) {
         this.listings = listings;
         this.people = people;
         this.favorites = favorites;
@@ -73,8 +81,19 @@ public class ListingController {
         this.messages = messages;
         this.notifications = notifications;
         this.listingService = listingService;
+        this.photoStorage = photoStorage;
         this.authService = authService;
         this.apiController = apiController;
+    }
+
+    @GetMapping("/uploads/{filename:[a-zA-Z0-9._-]+}")
+    @ResponseBody
+    public ResponseEntity<Resource> uploadedPhoto(@PathVariable String filename) {
+        PhotoStorageService.StoredPhoto stored = photoStorage.load(filename);
+        return ResponseEntity.ok()
+                .contentType(stored.mediaType())
+                .cacheControl(CacheControl.maxAge(Duration.ofDays(1)).cachePublic())
+                .body(stored.resource());
     }
 
     @ModelAttribute("utilisateurConnecte")
@@ -162,11 +181,21 @@ public class ListingController {
             model.addAttribute("modes", DeliveryMode.values());
             return "formulaire";
         }
+        String resolvedImageUrl;
+        try {
+            resolvedImageUrl = (form.photo != null && !form.photo.isEmpty())
+                    ? photoStorage.store(form.photo)
+                    : ListingQuerySupport.blank(form.imageUrl);
+        } catch (ResponseStatusException e) {
+            model.addAttribute("erreur", e.getReason());
+            model.addAttribute("etats", ItemState.values());
+            model.addAttribute("modes", DeliveryMode.values());
+            return "formulaire";
+        }
         Person owner = authService.requirePerson(authentication);
         Listing listing = new Listing(
                 form.title, form.description, form.state, form.area,
-                form.deliveryMode, owner, form.keywords(),
-                ListingQuerySupport.blank(form.imageUrl));
+                form.deliveryMode, owner, form.keywords(), resolvedImageUrl);
         listings.save(listing);
         notifications.notifyMatchingSearches(listing);
         return "redirect:/annonces/" + listing.getId();
@@ -224,15 +253,22 @@ public class ListingController {
             @RequestParam @NotNull ItemState state, @RequestParam @NotBlank String area,
             @RequestParam @NotNull DeliveryMode deliveryMode, @RequestParam(required = false) String keywords,
             @RequestParam(required = false) String imageUrl,
+            @RequestParam(value = "photo", required = false) MultipartFile photo,
             Authentication authentication) {
         Person connected = authService.requirePerson(authentication);
         Listing listing = findListing(id);
         if (!listing.ownedBy(connected.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
-        listing.update(title, description, state, area, deliveryMode, parseKeywords(keywords),
-                ListingQuerySupport.blank(imageUrl));
+        String previousImageUrl = listing.getImageUrl();
+        String resolvedImageUrl = (photo != null && !photo.isEmpty())
+                ? photoStorage.store(photo)
+                : ListingQuerySupport.blank(imageUrl);
+        listing.update(title, description, state, area, deliveryMode, parseKeywords(keywords), resolvedImageUrl);
         listings.save(listing);
+        if (!Objects.equals(previousImageUrl, resolvedImageUrl)) {
+            photoStorage.deleteIfLocalUpload(previousImageUrl);
+        }
         return "redirect:/annonces/" + id;
     }
 
@@ -431,6 +467,7 @@ public class ListingController {
         @NotNull
         public DeliveryMode deliveryMode;
         public String imageUrl;
+        public MultipartFile photo;
 
         public String getTitle() { return title; }
         public void setTitle(String title) { this.title = title; }
@@ -446,6 +483,8 @@ public class ListingController {
         public void setDeliveryMode(DeliveryMode deliveryMode) { this.deliveryMode = deliveryMode; }
         public String getImageUrl() { return imageUrl; }
         public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+        public MultipartFile getPhoto() { return photo; }
+        public void setPhoto(MultipartFile photo) { this.photo = photo; }
 
         Set<String> keywords() {
             return parseKeywords(keywords);

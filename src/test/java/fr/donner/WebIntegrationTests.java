@@ -8,12 +8,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -22,6 +24,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -34,7 +37,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:donner-test;DB_CLOSE_DELAY=-1",
         "spring.jpa.hibernate.ddl-auto=validate",
-        "spring.flyway.enabled=true"
+        "spring.flyway.enabled=true",
+        "donner.upload-dir=./target/test-uploads"
 })
 @AutoConfigureMockMvc
 class WebIntegrationTests {
@@ -211,6 +215,37 @@ class WebIntegrationTests {
                 .andExpect(jsonPath("$.title").value("Chaise en chêne"))
                 .andExpect(jsonPath("$.imageUrl").value(oakChairPhoto));
 
+        // Upload d'une photo via l'API multipart
+        MockMultipartFile pngPhoto = new MockMultipartFile(
+                "file", "chaise.png", "image/png",
+                new byte[] { (byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A });
+        MockMultipartFile invalidFile = new MockMultipartFile(
+                "file", "notes.txt", "text/plain", "pas une image".getBytes());
+
+        mvc.perform(multipart("/api/annonces/" + listingId + "/photo")
+                        .file(pngPhoto)
+                        .with(httpBasic("yanis@example.fr", "password")))
+                .andExpect(status().isForbidden());
+
+        mvc.perform(multipart("/api/annonces/" + listingId + "/photo")
+                        .file(invalidFile)
+                        .with(httpBasic("camille@example.fr", "password")))
+                .andExpect(status().isBadRequest());
+
+        MvcResult apiUpload = mvc.perform(multipart("/api/annonces/" + listingId + "/photo")
+                        .file(pngPhoto)
+                        .with(httpBasic("camille@example.fr", "password")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.imageUrl", startsWith("/uploads/")))
+                .andExpect(jsonPath("$._links.photo.href", containsString("/api/annonces/" + listingId + "/photo")))
+                .andReturn();
+        String uploadedApiUrl = objectMapper.readTree(apiUpload.getResponse().getContentAsString())
+                .get("imageUrl").asText();
+
+        mvc.perform(get(uploadedApiUrl))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.IMAGE_PNG));
+
         // Suppression interdite à Yanis
         mvc.perform(delete("/api/annonces/" + listingId)
                         .with(httpBasic("yanis@example.fr", "password")))
@@ -269,6 +304,54 @@ class WebIntegrationTests {
                 .andExpect(jsonPath("$.imageUrl").value(tablePhoto));
 
         mvc.perform(post("/annonces/" + htmlId + "/supprimer")
+                        .with(user("camille@example.fr"))
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection());
+
+        // Création HTML avec upload de fichier image et rejet d'un fichier non-image
+        MockMultipartFile htmlInvalidFile = new MockMultipartFile(
+                "photo", "doc.txt", "text/plain", "texte".getBytes());
+        mvc.perform(multipart("/annonces")
+                        .file(htmlInvalidFile)
+                        .with(user("camille@example.fr"))
+                        .with(csrf())
+                        .param("title", "Annonce invalide")
+                        .param("description", "Test")
+                        .param("state", "BON")
+                        .param("area", "Lyon")
+                        .param("deliveryMode", "MAIN_PROPRE"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Format d’image non pris en charge")));
+
+        MockMultipartFile jpgPhoto = new MockMultipartFile(
+                "photo", "table.jpg", "image/jpeg",
+                new byte[] { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0 });
+        MvcResult htmlUploadCreate = mvc.perform(multipart("/annonces")
+                        .file(jpgPhoto)
+                        .with(user("camille@example.fr"))
+                        .with(csrf())
+                        .param("title", "Table avec upload")
+                        .param("description", "Photo importée")
+                        .param("state", "TRES_BON")
+                        .param("area", "Lyon")
+                        .param("deliveryMode", "MAIN_PROPRE"))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+        String uploadLocation = htmlUploadCreate.getResponse().getRedirectedUrl();
+        long uploadHtmlId = Long.parseLong(uploadLocation.substring(uploadLocation.lastIndexOf('/') + 1));
+
+        MvcResult uploadedDetailJson = mvc.perform(get("/api/annonces/" + uploadHtmlId).accept(MediaTypes.HAL_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.imageUrl", startsWith("/uploads/")))
+                .andReturn();
+        String htmlUploadedUrl = objectMapper.readTree(uploadedDetailJson.getResponse().getContentAsString())
+                .get("imageUrl").asText();
+
+        mvc.perform(get(htmlUploadedUrl))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.IMAGE_JPEG));
+
+        mvc.perform(post("/annonces/" + uploadHtmlId + "/supprimer")
                         .with(user("camille@example.fr"))
                         .with(csrf()))
                 .andExpect(status().is3xxRedirection());

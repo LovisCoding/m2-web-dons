@@ -27,7 +27,9 @@
                     Publié sous le profil : <strong th:text="${utilisateurConnecte.name}">Profil</strong>
                 </p>
 
-                <form class="editor" th:action="@{/annonces}" method="post" th:object="${annonce}">
+                <div class="alert error" th:if="${erreur}" role="alert" th:text="${erreur}">Erreur</div>
+
+                <form class="editor" th:action="@{/annonces}" method="post" th:object="${annonce}" enctype="multipart/form-data">
                     <label>
                         Titre de l’objet
                         <input required maxlength="180" th:field="*{title}" placeholder="Ex. Lampe de bureau vintage">
@@ -63,11 +65,18 @@
                             <span class="form-hint">Séparés par des virgules</span>
                         </label>
                     </div>
-                    <label>
-                        Photo (URL de l’image)
-                        <input maxlength="1000" th:field="*{imageUrl}" placeholder="https://images.unsplash.com/photo-...">
-                        <span class="form-hint">Optionnel — lien direct vers une photo de l’objet</span>
-                    </label>
+                    <div class="form-row">
+                        <label>
+                            Importer une photo (fichier)
+                            <input type="file" name="photo" accept="image/png,image/jpeg,image/webp,image/gif">
+                            <span class="form-hint">JPEG, PNG, WebP ou GIF (max 5 Mo)</span>
+                        </label>
+                        <label>
+                            Ou URL d’une image
+                            <input maxlength="1000" th:field="*{imageUrl}" placeholder="https://images.unsplash.com/photo-...">
+                            <span class="form-hint">Optionnel — prioritaire si aucun fichier n’est importé</span>
+                        </label>
+                    </div>
                     <button class="button" type="submit">Publier l’annonce</button>
                 </form>
             </div>

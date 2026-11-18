@@ -17,6 +17,7 @@ import fr.donner.repo.SavedSearchRepository;
 import fr.donner.security.AuthService;
 import fr.donner.service.ListingService;
 import fr.donner.service.NotificationService;
+import fr.donner.service.PhotoStorageService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -49,6 +50,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -65,12 +67,13 @@ public class ApiController {
     private final MessageRepository messages;
     private final NotificationService notifications;
     private final ListingService listingService;
+    private final PhotoStorageService photoStorage;
     private final AuthService authService;
 
     public ApiController(PersonRepository people, ListingRepository listings,
             FavoriteRepository favorites, SavedSearchRepository searches,
             ItemLotRepository lots, MessageRepository messages, NotificationService notifications,
-            ListingService listingService, AuthService authService) {
+            ListingService listingService, PhotoStorageService photoStorage, AuthService authService) {
         this.people = people;
         this.listings = listings;
         this.favorites = favorites;
@@ -79,6 +82,7 @@ public class ApiController {
         this.messages = messages;
         this.notifications = notifications;
         this.listingService = listingService;
+        this.photoStorage = photoStorage;
         this.authService = authService;
     }
 
@@ -172,6 +176,23 @@ public class ApiController {
                 request.deliveryMode(), request.keywords(),
                 request.imageUrl() != null ? ListingQuerySupport.blank(request.imageUrl()) : listing.getImageUrl());
         return toListingModel(listing);
+    }
+
+    @PostMapping(path = "/annonces/{id}/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Transactional
+    public EntityModel<Listing> uploadListingPhoto(@PathVariable Long id,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "photo", required = false) MultipartFile photo,
+            @RequestParam(required = false) Long ownerId,
+            Authentication authentication) {
+        Person connected = authService.requireSamePerson(authentication, ownerId);
+        Listing listing = findListing(id);
+        requireOwner(listing, connected.getId());
+        MultipartFile upload = (file != null && !file.isEmpty()) ? file : photo;
+        String storedUrl = photoStorage.store(upload);
+        photoStorage.deleteIfLocalUpload(listing.getImageUrl());
+        listing.setImageUrl(storedUrl);
+        return toListingModel(listings.save(listing));
     }
 
     @DeleteMapping("/annonces/{id}")
@@ -413,6 +434,7 @@ public class ApiController {
         Long ownerId = listing.getOwner().getId();
         return EntityModel.of(listing,
                 linkTo(ApiController.class).slash("annonces").slash(id).withSelfRel(),
+                linkTo(ApiController.class).slash("annonces").slash(id).slash("photo").withRel("photo"),
                 linkTo(ListingController.class).slash("annonces").slash(id).withRel("html"),
                 linkTo(ApiController.class).slash("annonces").withRel("collection"),
                 linkTo(ApiController.class).slash("personnes").slash(ownerId).withRel("proprietaire"),

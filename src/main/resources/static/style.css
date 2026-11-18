@@ -431,6 +431,31 @@ input:hover, textarea:hover, select:hover {
     border-color: #9eb0a2;
 }
 
+input[type="file"] {
+    padding: 8px 12px;
+    cursor: pointer;
+    color: var(--text-secondary);
+}
+
+input[type="file"]::file-selector-button {
+    margin-right: 12px;
+    padding: 7px 12px;
+    border: 1px solid var(--primary-border);
+    border-radius: 6px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background var(--transition), border-color var(--transition);
+}
+
+input[type="file"]::file-selector-button:hover {
+    background: #d5ebdc;
+    border-color: var(--primary);
+}
+
 .form-row {
     display: grid;
     grid-template-columns: repeat(2, 1fr);

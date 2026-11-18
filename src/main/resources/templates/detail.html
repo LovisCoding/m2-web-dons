@@ -60,7 +60,7 @@
                             <path d="m6 9 6 6 6-6"/>
                         </svg>
                     </summary>
-                    <form th:action="@{/annonces/{id}/modifier(id=${annonce.id})}" method="post">
+                    <form th:action="@{/annonces/{id}/modifier(id=${annonce.id})}" method="post" enctype="multipart/form-data">
                         <label>Titre<input name="title" required maxlength="180" th:value="${annonce.title}"></label>
                         <label>Description<textarea name="description" rows="4" th:text="${annonce.description}"></textarea></label>
                         <div class="form-row">
@@ -79,7 +79,10 @@
                             <label>Ville / zone<input name="area" required th:value="${annonce.area}"></label>
                             <label>Mots-clés<input name="keywords" th:value="${#strings.listJoin(annonce.keywords, ', ')}"></label>
                         </div>
-                        <label>Photo (URL de l’image)<input name="imageUrl" maxlength="1000" th:value="${annonce.imageUrl}" placeholder="https://images.unsplash.com/photo-..."></label>
+                        <div class="form-row">
+                            <label>Importer une nouvelle photo<input type="file" name="photo" accept="image/png,image/jpeg,image/webp,image/gif"></label>
+                            <label>Ou URL de l’image<input name="imageUrl" maxlength="1000" th:value="${annonce.imageUrl}" placeholder="https://images.unsplash.com/photo-..."></label>
+                        </div>
                         <button class="button" type="submit">Enregistrer les modifications</button>
                     </form>
                     <div class="danger-zone">
