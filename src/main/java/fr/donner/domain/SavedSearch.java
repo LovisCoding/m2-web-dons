@@ -35,7 +35,31 @@ public class SavedSearch {
         return notifications;
     }
 
+    public Long getId() { return id; }
+    public Person getPerson() { return person; }
+    public String getQuery() { return query; }
+    public String getArea() { return area; }
+    public String getState() { return state; }
+    public String getKeyword() { return keyword; }
+
+    public boolean matches(Listing listing) {
+        return (query == null || listing.getTitle().toLowerCase().contains(query.toLowerCase())
+                || (listing.getDescription() != null
+                    && listing.getDescription().toLowerCase().contains(query.toLowerCase())))
+                && (area == null || listing.getArea().toLowerCase().contains(area.toLowerCase()))
+                && (state == null || listing.getState().name().equalsIgnoreCase(state))
+                && (keyword == null || listing.getKeywords().stream()
+                        .anyMatch(value -> value.equalsIgnoreCase(keyword)));
+    }
+
     public void setNotifications(boolean notifications) {
         this.notifications = notifications;
+    }
+
+    public void update(String query, String area, String state, String keyword) {
+        this.query = query;
+        this.area = area;
+        this.state = state;
+        this.keyword = keyword;
     }
 }

@@ -2,7 +2,7 @@
 :root {
     font-family: 'Plus Jakarta Sans', sans-serif;
     color: #24212c;
-    background: #faf5ff;
+    background: #f5f8f4;
     font-synthesis: none;
 }
 * {
@@ -18,7 +18,7 @@ header {
     align-items: center;
     justify-content: space-between;
     background: #fff;
-    border-bottom: 1px solid #eee8f5;
+    border-bottom: 1px solid #e4ebe2;
 }
 .brand {
     text-decoration: none;
@@ -28,7 +28,7 @@ header {
     letter-spacing: -1.5px;
 }
 .brand span {
-    color: #7c3aed;
+    color: #14532d;
 }
 nav {
     display: flex;
@@ -49,18 +49,20 @@ nav a {
     padding: 0 22px;
     border: 0;
     border-radius: 8px;
-    background: #7c3aed;
+    background: #14532d;
     color: #fff;
     text-decoration: none;
-    font: 700 14px inherit;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
     cursor: pointer;
     transition: background .2s;
 }
 .button:hover {
-    background: #6227ca;
+    background: #0f4224;
 }
 .button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible {
-    outline: 3px solid #a78bfa;
+    outline: 3px solid #4b8b5b;
     outline-offset: 3px;
 }
 .button.small {
@@ -75,7 +77,7 @@ main {
     padding: 42px 0 58px;
 }
 .eyebrow {
-    color: #6f35cc;
+    color: #1f6337;
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 1.7px;
@@ -95,15 +97,70 @@ h1 {
 }
 .search {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr auto;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
     gap: 12px;
     align-items: end;
     background: #fff;
     padding: 18px;
-    border: 1px solid #eee8f5;
+    border: 1px solid #e4ebe2;
     border-radius: 14px;
     margin-top: 32px;
-    box-shadow: 0 12px 32px #3924580b;
+    box-shadow: 0 12px 32px #193c220b;
+}
+.save-search {
+    margin-top: 12px;
+}
+.text-button {
+    padding: 8px 0;
+    border: 0;
+    background: transparent;
+    color: #14532d;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+}
+.actions {
+    display: grid;
+    gap: 24px;
+    margin: 28px 0;
+    padding: 22px;
+    border: 1px solid #e4ebe2;
+    border-radius: 12px;
+    background: #fff;
+}
+.actions form {
+    display: grid;
+    gap: 14px;
+}
+.owner-tools {
+    margin: 24px 0;
+    padding: 20px;
+    border: 1px solid #e4ebe2;
+    border-radius: 12px;
+    background: #fff;
+}
+.owner-tools summary {
+    color: #285b36;
+    font-weight: 700;
+    cursor: pointer;
+}
+.owner-tools form {
+    display: grid;
+    gap: 14px;
+    margin-top: 18px;
+}
+.danger-button {
+    min-height: 44px;
+    padding: 0 18px;
+    border: 1px solid #a52a2a;
+    border-radius: 8px;
+    background: #fff;
+    color: #8b2020;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
 }
 label {
     display: grid;
@@ -118,10 +175,12 @@ input,textarea,select {
     border: 1px solid #ded8e6;
     border-radius: 7px;
     background: #fff;
-    font: 500 14px inherit;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
     color: #282330;
 }
-input: :placeholder {;
+input::placeholder,textarea::placeholder {
     color: #98919e;
 }
 .listing-head {
@@ -146,23 +205,32 @@ input: :placeholder {;
 }
 .card {
     background: #fff;
-    border: 1px solid #eee8f5;
+    border: 1px solid #e4ebe2;
     border-radius: 12px;
     overflow: hidden;
     transition: transform .2s,box-shadow .2s;
 }
 .card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 14px 28px #39245812;
+    box-shadow: 0 14px 28px #193c2212;
+}
+.card-link {
+    display: block;
+    height: 100%;
+    color: inherit;
+    text-decoration: none;
+}
+.card-link:hover h3 {
+    text-decoration: underline;
 }
 .card-art {
     height: 160px;
-    background: linear-gradient(135deg,#e9ddff,#d6f0e5);
+    background: linear-gradient(135deg, #dcebdc, #d6f0e5);
     display: flex;
     justify-content: space-between;
     align-items: start;
     padding: 16px;
-    color: #423454;
+    color: #23432d;
 }
 .card-art>span:first-child {
     background: #fff;
@@ -173,7 +241,7 @@ input: :placeholder {;
 }
 .spark {
     font-size: 42px;
-    color: #7642cc;
+    color: #337847;
 }
 .card-body {
     padding: 18px;
@@ -202,8 +270,8 @@ input: :placeholder {;
     margin: 15px 0;
 }
 .tags span {
-    background: #f2ecfc;
-    color: #6339a1;
+    background: #e8f1e8;
+    color: #285b36;
     padding: 6px 9px;
     border-radius: 20px;
     font-size: 11px;
@@ -219,13 +287,13 @@ input: :placeholder {;
     padding: 34px 0;
 }
 footer {
-    border-top: 1px solid #eee8f5;
+    border-top: 1px solid #e4ebe2;
     padding: 25px max(calc((100% - 1160px) / 2), 24px);
     color: #77717d;
     font-size: 13px;
 }
 footer a {
-    color: #6730bc;
+    color: #14532d;
     float: right;
 }
 .detail {
@@ -237,7 +305,7 @@ footer a {
 .detail-box {
     background: #fff;
     padding: 16px 22px;
-    border: 1px solid #eee8f5;
+    border: 1px solid #e4ebe2;
     border-radius: 12px;
     margin: 28px 0;
 }

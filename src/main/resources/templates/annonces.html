@@ -36,7 +36,23 @@
                     Mot-clé
                     <input name="motCle" placeholder="maison" th:value="${motCle}">
                 </label>
+                <label>
+                    État
+                    <select name="etat">
+                        <option value="">Tous les états</option>
+                        <option th:each="e : ${etats}" th:value="${e}" th:text="${e}"
+                                th:selected="${etat == e}"></option>
+                    </select>
+                </label>
                 <button class="button">Rechercher</button>
+            </form>
+            <form class="save-search" action="/recherches" method="post">
+                <input type="hidden" name="personId" value="1">
+                <input type="hidden" name="q" th:value="${q}">
+                <input type="hidden" name="zone" th:value="${zone}">
+                <input type="hidden" name="etat" th:value="${etat}">
+                <input type="hidden" name="motCle" th:value="${motCle}">
+                <button class="text-button">Sauvegarder cette recherche (profil démo)</button>
             </form>
         </section>
 
@@ -50,23 +66,23 @@
 
         <div class="cards">
             <article class="card" th:each="a : ${annonces}">
-                <div class="card-art">
-                    <span th:text="${a.state}">BON</span>
-                    <span class="spark" aria-hidden="true">✳</span>
-                </div>
-                <div class="card-body">
-                    <p class="meta" th:text="${a.area} + ' · ' + ${a.deliveryMode}">
-                        Lyon · main propre
-                    </p>
-                    <h3>
-                        <a th:href="@{/annonces/{id}(id=${a.id})}" th:text="${a.title}">Titre</a>
-                    </h3>
-                    <p th:text="${a.description}">Description</p>
-                    <div class="tags">
-                        <span th:each="tag : ${a.keywords}" th:text="${tag}">mot</span>
+                <a class="card-link" th:href="@{/annonces/{id}(id=${a.id})}">
+                    <div class="card-art">
+                        <span th:text="${a.state}">BON</span>
+                        <span class="spark" aria-hidden="true">✳</span>
                     </div>
-                    <p class="owner" th:text="'Donné par ' + ${a.owner.name}">Donateur</p>
-                </div>
+                    <div class="card-body">
+                        <p class="meta" th:text="${a.area} + ' · ' + ${a.deliveryMode}">
+                            Lyon · main propre
+                        </p>
+                        <h3 th:text="${a.title}">Titre</h3>
+                        <p th:text="${a.description}">Description</p>
+                        <div class="tags">
+                            <span th:each="tag : ${a.keywords}" th:text="${tag}">mot</span>
+                        </div>
+                        <p class="owner" th:text="'Donné par ' + ${a.owner.name}">Donateur</p>
+                    </div>
+                </a>
             </article>
         </div>
 

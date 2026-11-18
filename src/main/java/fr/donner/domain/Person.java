@@ -3,6 +3,7 @@ package fr.donner.domain;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class Person {
@@ -33,6 +34,7 @@ public class Person {
         return name;
     }
 
+    @JsonIgnore
     public String getEmail() {
         return email;
     }

@@ -18,6 +18,8 @@
         <p class="eyebrow" th:text="${annonce.area}">Ville</p>
         <h1 th:text="${annonce.title}">Objet</h1>
         <p class="intro" th:text="${annonce.description}">Description</p>
+        <p class="meta">Publiée le <time th:datetime="${annonce.publishedAt}"
+                th:text="${datePublication}">18/11/2026</time></p>
 
         <div class="detail-box">
             <p>
@@ -38,6 +40,55 @@
         <div class="tags">
             <span th:each="tag : ${annonce.keywords}" th:text="${tag}">mot</span>
         </div>
+        <section class="actions">
+            <form th:action="@{/annonces/{id}/favoris(id=${annonce.id})}" method="post">
+                <label>
+                    Profil démo
+                    <select name="personId">
+                        <option th:each="personne : ${personnes}" th:value="${personne.id}"
+                                th:text="${personne.name}"></option>
+                    </select>
+                </label>
+                <button class="button" type="submit">Ajouter aux favoris</button>
+            </form>
+            <form th:action="@{/annonces/{id}/messages(id=${annonce.id})}" method="post">
+                <label>
+                    Votre profil
+                    <select name="senderId">
+                        <option th:each="personne : ${personnes}" th:value="${personne.id}"
+                                th:text="${personne.name}"></option>
+                    </select>
+                </label>
+                <label>
+                    Votre message au donateur
+                    <textarea name="body" rows="3" required maxlength="4000"></textarea>
+                </label>
+                <button class="button" type="submit">Envoyer le message</button>
+            </form>
+        </section>
+        <details class="owner-tools">
+            <summary>Modifier ou supprimer (propriétaire)</summary>
+            <form th:action="@{/annonces/{id}/modifier(id=${annonce.id})}" method="post">
+                <input type="hidden" name="ownerId" th:value="${annonce.owner.id}">
+                <label>Titre<input name="title" required maxlength="180" th:value="${annonce.title}"></label>
+                <label>Description<textarea name="description" rows="4" th:text="${annonce.description}"></textarea></label>
+                <label>État<select name="state" required>
+                    <option th:each="e : ${T(fr.donner.domain.ItemState).values()}" th:value="${e}"
+                            th:text="${e}" th:selected="${annonce.state == e}"></option>
+                </select></label>
+                <label>Ville / zone<input name="area" required th:value="${annonce.area}"></label>
+                <label>Remise<select name="deliveryMode" required>
+                    <option th:each="m : ${T(fr.donner.domain.DeliveryMode).values()}" th:value="${m}"
+                            th:text="${m}" th:selected="${annonce.deliveryMode == m}"></option>
+                </select></label>
+                <label>Mots-clés<input name="keywords" th:value="${annonce.keywords}"></label>
+                <button class="button" type="submit">Enregistrer</button>
+            </form>
+            <form th:action="@{/annonces/{id}/supprimer(id=${annonce.id})}" method="post">
+                <input type="hidden" name="ownerId" th:value="${annonce.owner.id}">
+                <button class="danger-button" type="submit">Supprimer l’annonce</button>
+            </form>
+        </details>
         <a class="button" href="/annonces">Retour aux annonces</a>
     </main>
 </body>

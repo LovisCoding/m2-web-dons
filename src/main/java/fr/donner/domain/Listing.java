@@ -19,5 +19,6 @@ public class Listing {
     protected Listing() {}
     public Listing(String title,String description,ItemState state,String area,DeliveryMode mode,Person owner,Set<String> keywords){this.title=title;this.description=description;this.state=state;this.area=area;this.deliveryMode=mode;this.owner=owner;this.keywords=keywords==null?new LinkedHashSet<>():keywords;}
     public Long getId(){return id;} public String getTitle(){return title;} public String getDescription(){return description;} public ItemState getState(){return state;} public Instant getPublishedAt(){return publishedAt;} public String getArea(){return area;} public DeliveryMode getDeliveryMode(){return deliveryMode;} public Set<String> getKeywords(){return keywords;} public Person getOwner(){return owner;}
+    public boolean ownedBy(Long personId) { return owner.getId().equals(personId); }
     public void update(String title,String description,ItemState state,String area,DeliveryMode mode,Set<String> keywords){this.title=title;this.description=description;this.state=state;this.area=area;this.deliveryMode=mode;this.keywords=keywords==null?new LinkedHashSet<>():keywords;}
 }

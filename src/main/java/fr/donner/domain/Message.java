@@ -38,4 +38,11 @@ public class Message {
         this.listing = listing;
         this.body = body;
     }
+
+    public Long getId() { return id; }
+    public Person getSender() { return sender; }
+    public Person getRecipient() { return recipient; }
+    public Listing getListing() { return listing; }
+    public String getBody() { return body; }
+    public Instant getSentAt() { return sentAt; }
 }

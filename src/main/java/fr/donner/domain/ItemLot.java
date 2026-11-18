@@ -1,5 +1,6 @@
 package fr.donner.domain;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,7 +23,7 @@ public class ItemLot {
     @NotBlank
     private String name;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "lot_listing")
     private Set<Listing> listings = new LinkedHashSet<>();
 
@@ -33,6 +34,11 @@ public class ItemLot {
         this.owner = owner;
         this.name = name;
     }
+
+    public Long getId() { return id; }
+    public Person getOwner() { return owner; }
+    public String getName() { return name; }
+    public Set<Listing> getListings() { return listings; }
 
     public void add(Listing listing) {
         boolean sameOwner = listing.getOwner() == owner

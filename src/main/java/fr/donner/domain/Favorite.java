@@ -27,4 +27,6 @@ public class Favorite {
         this.person = person;
         this.listing = listing;
     }
+
+    public Listing getListing() { return listing; }
 }
