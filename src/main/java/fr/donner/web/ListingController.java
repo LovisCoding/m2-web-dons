@@ -165,7 +165,8 @@ public class ListingController {
         Person owner = authService.requirePerson(authentication);
         Listing listing = new Listing(
                 form.title, form.description, form.state, form.area,
-                form.deliveryMode, owner, form.keywords());
+                form.deliveryMode, owner, form.keywords(),
+                ListingQuerySupport.blank(form.imageUrl));
         listings.save(listing);
         notifications.notifyMatchingSearches(listing);
         return "redirect:/annonces/" + listing.getId();
@@ -222,13 +223,15 @@ public class ListingController {
             @RequestParam @NotBlank String title, @RequestParam String description,
             @RequestParam @NotNull ItemState state, @RequestParam @NotBlank String area,
             @RequestParam @NotNull DeliveryMode deliveryMode, @RequestParam(required = false) String keywords,
+            @RequestParam(required = false) String imageUrl,
             Authentication authentication) {
         Person connected = authService.requirePerson(authentication);
         Listing listing = findListing(id);
         if (!listing.ownedBy(connected.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
-        listing.update(title, description, state, area, deliveryMode, parseKeywords(keywords));
+        listing.update(title, description, state, area, deliveryMode, parseKeywords(keywords),
+                ListingQuerySupport.blank(imageUrl));
         listings.save(listing);
         return "redirect:/annonces/" + id;
     }
@@ -427,6 +430,7 @@ public class ListingController {
         public ItemState state;
         @NotNull
         public DeliveryMode deliveryMode;
+        public String imageUrl;
 
         public String getTitle() { return title; }
         public void setTitle(String title) { this.title = title; }
@@ -440,6 +444,8 @@ public class ListingController {
         public void setState(ItemState state) { this.state = state; }
         public DeliveryMode getDeliveryMode() { return deliveryMode; }
         public void setDeliveryMode(DeliveryMode deliveryMode) { this.deliveryMode = deliveryMode; }
+        public String getImageUrl() { return imageUrl; }
+        public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
         Set<String> keywords() {
             return parseKeywords(keywords);

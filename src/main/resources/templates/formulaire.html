@@ -63,6 +63,11 @@
                             <span class="form-hint">Séparés par des virgules</span>
                         </label>
                     </div>
+                    <label>
+                        Photo (URL de l’image)
+                        <input maxlength="1000" th:field="*{imageUrl}" placeholder="https://images.unsplash.com/photo-...">
+                        <span class="form-hint">Optionnel — lien direct vers une photo de l’objet</span>
+                    </label>
                     <button class="button" type="submit">Publier l’annonce</button>
                 </form>
             </div>

@@ -67,7 +67,10 @@
                 <p class="meta" th:if="${mesAnnonces.isEmpty()}">Vous n’avez pas encore déposé d’annonce.</p>
                 <ul class="space-list" th:if="${!mesAnnonces.isEmpty()}">
                     <li th:each="a : ${mesAnnonces}">
-                        <a th:href="@{/annonces/{id}(id=${a.id})}" th:text="${a.title}">Titre</a>
+                        <div class="space-item-main">
+                            <img class="space-thumb" th:if="${!#strings.isEmpty(a.imageUrl)}" th:src="${a.imageUrl}" th:alt="${a.title}" loading="lazy">
+                            <a th:href="@{/annonces/{id}(id=${a.id})}" th:text="${a.title}">Titre</a>
+                        </div>
                         <span class="state-badge" th:attr="data-state=${a.state}">
                             <span th:text="${a.area} + ' · '">Lyon · </span>
                             <span th:replace="~{fragments :: stateText(${a.state})}">BON</span>
@@ -91,9 +94,12 @@
                 <p class="meta" th:if="${mesFavoris.isEmpty()}">Aucun favori pour le moment.</p>
                 <ul class="space-list" th:if="${!mesFavoris.isEmpty()}">
                     <li th:each="fav : ${mesFavoris}">
-                        <div>
-                            <a th:href="@{/annonces/{id}(id=${fav.id})}" th:text="${fav.title}">Titre</a>
-                            <div class="meta" th:text="${fav.area} + ' · ' + ${fav.owner.name}">Lyon</div>
+                        <div class="space-item-main">
+                            <img class="space-thumb" th:if="${!#strings.isEmpty(fav.imageUrl)}" th:src="${fav.imageUrl}" th:alt="${fav.title}" loading="lazy">
+                            <div>
+                                <a th:href="@{/annonces/{id}(id=${fav.id})}" th:text="${fav.title}">Titre</a>
+                                <div class="meta" th:text="${fav.area} + ' · ' + ${fav.owner.name}">Lyon</div>
+                            </div>
                         </div>
                         <form th:action="@{/annonces/{id}/favoris/supprimer(id=${fav.id})}" method="post">
                             <input type="hidden" name="redirect" value="espace">

@@ -28,6 +28,9 @@
         <div class="detail-grid">
             <div>
                 <article class="detail-main-card">
+                    <div class="detail-photo-wrap" th:if="${!#strings.isEmpty(annonce.imageUrl)}">
+                        <img class="detail-photo" th:src="${annonce.imageUrl}" th:alt="${annonce.title}">
+                    </div>
                     <p class="eyebrow">
                         <svg class="icon-sm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
@@ -76,6 +79,7 @@
                             <label>Ville / zone<input name="area" required th:value="${annonce.area}"></label>
                             <label>Mots-clés<input name="keywords" th:value="${#strings.listJoin(annonce.keywords, ', ')}"></label>
                         </div>
+                        <label>Photo (URL de l’image)<input name="imageUrl" maxlength="1000" th:value="${annonce.imageUrl}" placeholder="https://images.unsplash.com/photo-..."></label>
                         <button class="button" type="submit">Enregistrer les modifications</button>
                     </form>
                     <div class="danger-zone">

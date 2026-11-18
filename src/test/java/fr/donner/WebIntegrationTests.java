@@ -49,7 +49,8 @@ class WebIntegrationTests {
         // HTML sans en-tête Accept
         mvc.perform(get("/annonces"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(content().string(containsString("class=\"card-photo\"")));
 
         // HTML avec en-tête Accept navigateur réaliste (contient */*)
         mvc.perform(get("/annonces")
@@ -59,7 +60,8 @@ class WebIntegrationTests {
 
         mvc.perform(get("/annonces/1"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(content().string(containsString("class=\"detail-photo\"")));
 
         // Variantes avec barre oblique finale
         mvc.perform(get("/annonces/"))
@@ -76,11 +78,12 @@ class WebIntegrationTests {
                 .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON))
                 .andExpect(jsonPath("$._links.self.href").exists())
                 .andExpect(jsonPath("$._links.html.href").exists())
-                .andExpect(jsonPath("$.page.totalElements", greaterThanOrEqualTo(2)));
+                .andExpect(jsonPath("$.page.totalElements", greaterThanOrEqualTo(102)));
 
         mvc.perform(get("/annonces/1").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.imageUrl", notNullValue()))
                 .andExpect(jsonPath("$._links.self.href", containsString("/api/annonces/1")))
                 .andExpect(jsonPath("$._links.html.href", containsString("/annonces/1")));
 
@@ -176,12 +179,15 @@ class WebIntegrationTests {
     @Test
     void listingWriteLifecycleAndAuthorization() throws Exception {
         // Création API en tant que Camille
+        String chairPhoto = "https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80";
+        String oakChairPhoto = "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?auto=format&fit=crop&w=800&q=80";
         MvcResult createResult = mvc.perform(post("/api/annonces")
                         .with(httpBasic("camille@example.fr", "password"))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\":\"Chaise en bois\",\"description\":\"Bon état\",\"state\":\"BON\",\"area\":\"Lyon\",\"deliveryMode\":\"MAIN_PROPRE\",\"keywords\":[\"meuble\"]}"))
+                        .content("{\"title\":\"Chaise en bois\",\"description\":\"Bon état\",\"state\":\"BON\",\"area\":\"Lyon\",\"deliveryMode\":\"MAIN_PROPRE\",\"keywords\":[\"meuble\"],\"imageUrl\":\"" + chairPhoto + "\"}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.title").value("Chaise en bois"))
+                .andExpect(jsonPath("$.imageUrl").value(chairPhoto))
                 .andExpect(jsonPath("$._links.self.href", notNullValue()))
                 .andExpect(jsonPath("$._links.proprietaire.href", containsString("/api/personnes/1")))
                 .andReturn();
@@ -200,9 +206,10 @@ class WebIntegrationTests {
         mvc.perform(put("/api/annonces/" + listingId)
                         .with(httpBasic("camille@example.fr", "password"))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\":\"Chaise en chêne\",\"description\":\"Très bon état\",\"state\":\"TRES_BON\",\"area\":\"Lyon\",\"deliveryMode\":\"LES_DEUX\",\"keywords\":[\"meuble\",\"bois\"]}"))
+                        .content("{\"title\":\"Chaise en chêne\",\"description\":\"Très bon état\",\"state\":\"TRES_BON\",\"area\":\"Lyon\",\"deliveryMode\":\"LES_DEUX\",\"keywords\":[\"meuble\",\"bois\"],\"imageUrl\":\"" + oakChairPhoto + "\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Chaise en chêne"));
+                .andExpect(jsonPath("$.title").value("Chaise en chêne"))
+                .andExpect(jsonPath("$.imageUrl").value(oakChairPhoto));
 
         // Suppression interdite à Yanis
         mvc.perform(delete("/api/annonces/" + listingId)
@@ -218,6 +225,7 @@ class WebIntegrationTests {
                 .andExpect(status().isNotFound());
 
         // Cycle complet via formulaires HTML (création, modification, refus 403, suppression)
+        String tablePhoto = "https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?auto=format&fit=crop&w=800&q=80";
         MvcResult htmlCreate = mvc.perform(post("/annonces")
                         .with(user("camille@example.fr"))
                         .with(csrf())
@@ -226,7 +234,8 @@ class WebIntegrationTests {
                         .param("state", "BON")
                         .param("area", "Lyon")
                         .param("deliveryMode", "MAIN_PROPRE")
-                        .param("keywords", "meuble, salon"))
+                        .param("keywords", "meuble, salon")
+                        .param("imageUrl", tablePhoto))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
         String location = htmlCreate.getResponse().getRedirectedUrl();
@@ -250,12 +259,14 @@ class WebIntegrationTests {
                         .param("state", "TRES_BON")
                         .param("area", "Villeurbanne")
                         .param("deliveryMode", "ENVOI")
-                        .param("keywords", "meuble"))
+                        .param("keywords", "meuble")
+                        .param("imageUrl", tablePhoto))
                 .andExpect(status().is3xxRedirection());
 
         mvc.perform(get("/api/annonces/" + htmlId).accept(MediaTypes.HAL_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Table HTML modifiée"));
+                .andExpect(jsonPath("$.title").value("Table HTML modifiée"))
+                .andExpect(jsonPath("$.imageUrl").value(tablePhoto));
 
         mvc.perform(post("/annonces/" + htmlId + "/supprimer")
                         .with(user("camille@example.fr"))

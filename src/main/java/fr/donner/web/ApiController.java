@@ -169,7 +169,8 @@ public class ApiController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le propriétaire ne peut pas être modifié");
         }
         listing.update(request.title(), request.description(), request.state(), request.area(),
-                request.deliveryMode(), request.keywords());
+                request.deliveryMode(), request.keywords(),
+                request.imageUrl() != null ? ListingQuerySupport.blank(request.imageUrl()) : listing.getImageUrl());
         return toListingModel(listing);
     }
 
@@ -546,10 +547,12 @@ public class ApiController {
 
     public record ListingRequest(@NotBlank String title, String description,
             @NotNull ItemState state, @NotBlank String area,
-            @NotNull DeliveryMode deliveryMode, Long ownerId, Set<String> keywords) {
+            @NotNull DeliveryMode deliveryMode, Long ownerId, Set<String> keywords,
+            String imageUrl) {
         Listing toListing(Person owner) {
             return new Listing(title, description, state, area, deliveryMode, owner,
-                    keywords == null ? Set.of() : new LinkedHashSet<>(keywords));
+                    keywords == null ? Set.of() : new LinkedHashSet<>(keywords),
+                    ListingQuerySupport.blank(imageUrl));
         }
     }
 
