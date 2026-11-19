@@ -20,7 +20,7 @@ services:
       DATABASE_USER: ${POSTGRES_USER}
       DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "8080:2221"
+      - "2221:2221"
     volumes:
       - appdata:/app/data
     depends_on:

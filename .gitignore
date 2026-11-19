@@ -3,3 +3,7 @@
 /.idea/
 *.iml
 /.env
+
+.cursor
+.opencode
+.gemini

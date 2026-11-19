@@ -10,7 +10,7 @@ Application Spring Boot avec rendu Thymeleaf, API JSON/HAL, authentification Spr
 ./run.sh build
 ```
 
-L’application est accessible sur <http://localhost:8080/annonces>. La console H2 est sur `/h2-console`.
+L’application est accessible sur <http://localhost:2221/annonces>. La console H2 est sur `/h2-console`.
 La base locale persistante se trouve dans `./data/donner`, initialisée et validée par Flyway
 (`src/main/resources/db/migration/V1__init_schema.sql`, `V2__add_authentication.sql`).
 Pour configurer une base externe, fournir `DATABASE_URL`, `DATABASE_USER` et `DATABASE_PASSWORD`.
@@ -66,7 +66,7 @@ Les notifications sont simulées dans les journaux.
 Créer une annonce (en tant que Camille) :
 
 ```sh
-curl -u camille@example.fr:password -X POST http://localhost:8080/api/annonces \
+curl -u camille@example.fr:password -X POST http://localhost:2221/api/annonces \
   -H 'Content-Type: application/json' \
   -d '{"title":"Chaise en bois","description":"En bon état","state":"BON","area":"Lyon","deliveryMode":"MAIN_PROPRE","keywords":["meuble"]}'
 ```
@@ -74,13 +74,13 @@ curl -u camille@example.fr:password -X POST http://localhost:8080/api/annonces \
 Ajouter une annonce aux favoris d’un profil (en tant que Yanis) :
 
 ```sh
-curl -u yanis@example.fr:password -X POST http://localhost:8080/api/personnes/2/favoris/1
+curl -u yanis@example.fr:password -X POST http://localhost:2221/api/personnes/2/favoris/1
 ```
 
 Envoyer un message (en tant que Yanis) :
 
 ```sh
-curl -u yanis@example.fr:password -X POST http://localhost:8080/api/messages \
+curl -u yanis@example.fr:password -X POST http://localhost:2221/api/messages \
   -H 'Content-Type: application/json' \
   -d '{"recipientId":1,"listingId":1,"body":"Est-elle toujours disponible ?"}'
 ```

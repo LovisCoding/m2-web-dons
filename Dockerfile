@@ -24,6 +24,6 @@ USER donner
 
 VOLUME ["/app/data"]
 
-EXPOSE 8080
+EXPOSE 2221
 
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
